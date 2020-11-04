@@ -62,7 +62,16 @@ always_comb begin
 	case (ins[1:0])
 		2'b00: begin
 			casez (ins[15:13])
-				3'b0??: begin //C.LW
+				3'b000: begin //C.ADDI4SPN
+					rd = RVC_Reg(ins[4:2]); 
+					rs1 = 2;
+					rs2 = 0;
+					imm = {22'h0, ins[10:7], ins[12:11], ins[5], ins[6], 2'b00};
+					regwrite=(!stall) && 1'b1; 
+					alusrc=1'b1;
+					alusel=3'b000;
+				end
+				3'b010: begin //C.LW
 					rd = RVC_Reg(ins[4:2]);
 					rs1 = RVC_Reg(ins[9:7]);
 					rs2 = 0; 
@@ -91,7 +100,7 @@ always_comb begin
 					rd = ins[11:7];
 					rs1 = ins[11:7];
 					rs2 = 0; 
-					imm = {26'h0, ins[12], ins[6:2]};
+					imm = ins[12] ? {26'h3ffffff, ins[12], ins[6:2]} : {26'h0, ins[12], ins[6:2]};
 					regwrite=(!stall)&&1'b1;
 					alusrc=1'b1;
 					alusel=3'b000;
@@ -108,7 +117,7 @@ always_comb begin
 					rd = ins[11:7];
 					rs1 = 0;
 					rs2 = 0;
-					imm = {26'h0, ins[12], ins[6:2]};		
+					imm = ins[12] ? {26'h3ffffff, ins[12], ins[6:2]} : {26'h0, ins[12], ins[6:2]};		
 					regwrite=(!stall)&&1'b1;
 					alusrc=1;
 					alusel=3'b000;			
@@ -118,7 +127,7 @@ always_comb begin
 						rd = ins[11:7];
 						rs1 = ins[11:7];
 						rs2 = 0;
-						imm = {22'h0, ins[12], ins[4:3], ins[5], ins[2], ins[6], 4'h0};
+						imm = ins[12] ? {22'h3fffff, ins[12], ins[4:3], ins[5], ins[2], ins[6], 4'h0} : {22'h0, ins[12], ins[4:3], ins[5], ins[2], ins[6], 4'h0};
 						regwrite=(!stall)&&1'b1;
 						alusrc=1;
 						alusel=3'b000;
@@ -126,7 +135,7 @@ always_comb begin
 						rd = ins[11:7];
 						rs1 = 0;
 						rs2 = 0; 
-						imm = {14'h0, ins[17], ins[6:2], 12'h0};
+						imm = ins[17] ? {14'h3fff, ins[17], ins[6:2], 12'h0}:{14'h0, ins[17], ins[6:2], 12'h0};
 						lui=1'b1;
 						alusrc=1'b1;
 						regwrite = stall? 0 : 1;
@@ -151,6 +160,7 @@ always_comb begin
 						2'b10: begin //ANDI
 							alusrc = 1;
 							alusel = 3'b010;
+							imm = ins[12] ? {26'h3ffffff, ins[12], ins[6:2]} : {26'h0, ins[12], ins[6:2]};
 						end
 						2'b11: begin
 							alusrc = 0;
@@ -242,6 +252,10 @@ always_comb begin
 					rs1 = 2;
 					rs2 = ins[6:2]; 
 					imm = {24'h0, ins[8:7], ins[12:9], 2'b00};
+					memwrite=(!stall)&&1'b1;
+					alusrc=1'b1;
+					alusel=3'b000;
+					storecntrl=3'b111;
 				end
 			endcase
 		end

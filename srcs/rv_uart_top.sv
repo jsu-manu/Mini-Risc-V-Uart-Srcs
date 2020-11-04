@@ -116,6 +116,9 @@ assign key[11:0]=12'h3cf;
 //`ifndef SYNTHESIS
 
 clk_wiz_0 c0(.*);
+//initial begin
+//	clk_50M = 0;
+//end
   riscv_bus rbus(.clk(clk_50M), .*);
   mmio_bus mbus(.clk(clk_50M), .BR_clk(clk), .*);
 clk_div cdiv(clk,Rst,16'd500,clk_7seg);  
@@ -158,18 +161,20 @@ clk_div cdiv(clk,Rst,16'd500,clk_7seg);
     
   //clock divider logic
 //  always @(posedge clk) begin
-//    rst_last <= Rst;
-//    if (Rst == 1'b1 && rst_in == 1'b0 && rst_last == 1'b0) 
-//        rst_in <= 1;
-//    else
-//        rst_in <= 0;
-//     count <= count + 1;
-//     clk_50M<=!clk_50M;
-//     if(count==500)
-//     begin
-//        count<=0;
-//        clk_disp <= !clk_disp;
-//     end
+//  	if (Rst) clk_50M <= 0;
+//  	else clk_50M<=!clk_50M;
+////    rst_last <= Rst;
+////    if (Rst == 1'b1 && rst_in == 1'b0 && rst_last == 1'b0) 
+////        rst_in <= 1;
+////    else
+////        rst_in <= 0;
+////     count <= count + 1;
+////     clk_50M<=!clk_50M;
+////     if(count==500)
+////     begin
+////        count<=0;
+////        clk_disp <= !clk_disp;
+////     end
 //  end
  
 

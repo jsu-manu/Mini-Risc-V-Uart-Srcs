@@ -137,61 +137,63 @@ always_ff @(posedge clk) begin
 end
 
 always_comb begin
-    case (mem_en_last) 
-        4'b0001: begin
-            blkmem_dout = {24'h0, doutb[7:0]}; 
-        end
-        4'b0010: begin 
-            blkmem_dout = {24'h0, doutb[15:8]};
-        end
-        4'b0100: begin
-            blkmem_dout = {24'h0, doutb[23:16]};
-        end
-        4'b1000: begin
-            blkmem_dout = {24'h0, doutb[31:24]};
-        end
-        4'b0011: begin 
-            blkmem_dout = {16'h0, doutb[15:0]};
-        end
-        4'b0110: begin 
-            blkmem_dout = {16'h0, doutb[23:8]};
-        end
-        4'b1100: begin
-            blkmem_dout = {16'h0, doutb[31:16]}; 
-        end
-        default: begin
-            blkmem_dout = doutb;
-        end 
-    endcase
+//    case (mem_en_last) 
+//        4'b0001: begin
+//            blkmem_dout = {24'h0, doutb[7:0]}; 
+//        end
+//        4'b0010: begin 
+//            blkmem_dout = {24'h0, doutb[15:8]};
+//        end
+//        4'b0100: begin
+//            blkmem_dout = {24'h0, doutb[23:16]};
+//        end
+//        4'b1000: begin
+//            blkmem_dout = {24'h0, doutb[31:24]};
+//        end
+//        4'b0011: begin 
+//            blkmem_dout = {16'h0, doutb[15:0]};
+//        end
+//        4'b0110: begin 
+//            blkmem_dout = {16'h0, doutb[23:8]};
+//        end
+//        4'b1100: begin
+//            blkmem_dout = {16'h0, doutb[31:16]}; 
+//        end
+//        default: begin
+//            blkmem_dout = doutb;
+//        end 
+//    endcase
+	blkmem_dout = doutb;
 end
 
 always_comb begin
-    case (mem_en) 
-        4'b0001: begin
-            blkmem_din = {24'h0, mem_din[7:0]};
-        end
-        4'b0010: begin 
-            blkmem_din = {16'h0, mem_din[7:0], 8'h0};  
-        end
-        4'b0100: begin
-            blkmem_din = {8'h0, mem_din[7:0], 16'h0};
-        end
-        4'b1000: begin
-            blkmem_din = {mem_din[7:0], 24'h0};
-        end
-        4'b0011: begin 
-            blkmem_din = {16'h0, mem_din[15:0]}; 
-        end
-        4'b0110: begin 
-            blkmem_din = {8'h0, mem_din[15:0], 8'h0};
-        end
-        4'b1100: begin
-            blkmem_din = {mem_din[15:0], 16'h0};
-        end
-        default: begin
-            blkmem_din = mem_din;
-        end 
-    endcase
+	blkmem_din = mem_din;
+//    case (mem_en) 
+//        4'b0001: begin
+//            blkmem_din = {24'h0, mem_din[7:0]};
+//        end
+//        4'b0010: begin 
+//            blkmem_din = {16'h0, mem_din[7:0], 8'h0};  
+//        end
+//        4'b0100: begin
+//            blkmem_din = {8'h0, mem_din[7:0], 16'h0};
+//        end
+//        4'b1000: begin
+//            blkmem_din = {mem_din[7:0], 24'h0};
+//        end
+//        4'b0011: begin 
+//            blkmem_din = {16'h0, mem_din[15:0]}; 
+//        end
+//        4'b0110: begin 
+//            blkmem_din = {8'h0, mem_din[15:0], 8'h0};
+//        end
+//        4'b1100: begin
+//            blkmem_din = {mem_din[15:0], 16'h0};
+//        end
+//        default: begin
+//            blkmem_din = mem_din;
+//        end 
+//    endcase
 end
 
 

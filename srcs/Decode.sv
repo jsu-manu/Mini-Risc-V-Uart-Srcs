@@ -108,6 +108,7 @@ logic [31:0]imm, IF_ID_imm;
 logic hz_sig;
 logic branch_taken_sig;
 
+
 //Compressed signals
 logic [4:0] c_rd, c_rs1, c_rs2;
 logic [1:0] c_funct2;
