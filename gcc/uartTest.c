@@ -8,7 +8,7 @@ int main(void) {
 	char h[] = "Hello, world!\r\n"; 
 	// // int strlen = 13; 
 	uart_print(h);
-	
+/*	
 	char numchar[12];
 	int num = 32; 
 
@@ -20,6 +20,6 @@ int main(void) {
 		c = uart_read_blocking();
 		// uart_write_blocking(c);
 		uart_put(c);
-	}
+	}*/
 	return 0;
 }

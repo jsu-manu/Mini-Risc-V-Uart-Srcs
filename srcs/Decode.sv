@@ -348,6 +348,7 @@ assign bus.ecall = (bus.ins == 32'b00000000000000000000000001110011);
             bus.ID_EX_CSR_write <= 1'b0;
             bus.csrsel <= 3'b000;
             bus.ID_EX_CSR_read <= 0;
+            bus.ID_EX_comp_sig <= 0;
             end
         else if(!bus.dbg && !bus.mem_hold) begin
             if (!hz_sig) begin
@@ -378,6 +379,7 @@ assign bus.ecall = (bus.ins == 32'b00000000000000000000000001110011);
                 bus.ID_EX_CSR_write <= csrwrite;
                 bus.csrsel <= csrsel;
                 bus.ID_EX_CSR_read <= csrread;
+                bus.ID_EX_comp_sig <= bus.comp_sig;
             end else begin
                 bus.ID_EX_alusel<=3'b000;
                 bus.ID_EX_alusrc<=1'b1;
@@ -406,6 +408,7 @@ assign bus.ecall = (bus.ins == 32'b00000000000000000000000001110011);
                 bus.ID_EX_CSR_write <= 1'b0;
                 bus.csrsel <= 3'b000;
                 bus.ID_EX_CSR_read <= 0;
+                bus.ID_EX_comp_sig <= bus.comp_sig;
             end
         end
     end

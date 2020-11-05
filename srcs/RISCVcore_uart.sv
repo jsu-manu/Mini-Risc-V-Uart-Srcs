@@ -96,6 +96,7 @@ interface main_bus (
     logic [31:0] imem_addr;
     
     logic comp_sig;
+    logic ID_EX_comp_sig;
     
 //    logic push, pop, stack_ena; 
 //    logic stack_mismatch, stack_full, stack_empty; 
@@ -159,7 +160,7 @@ interface main_bus (
         output ID_EX_storecntrl, ID_EX_loadcntrl, ID_EX_cmpcntrl,
         output ID_EX_auipc, ID_EX_lui, ID_EX_alusrc, 
         output ID_EX_memwrite, ID_EX_imm, ID_EX_compare, ID_EX_jal, 
-        output IF_ID_CSR_addr, ID_EX_CSR_addr, ID_EX_CSR, ID_EX_CSR_write, csrsel, ID_EX_CSR_read, ecall
+        output IF_ID_CSR_addr, ID_EX_CSR_addr, ID_EX_CSR, ID_EX_CSR_write, csrsel, ID_EX_CSR_read, ecall, ID_EX_comp_sig
     );
      
     //modport for execute stage    
@@ -180,7 +181,8 @@ interface main_bus (
         output EX_MEM_pres_addr,
         input key, 
         input ID_EX_CSR_addr, ID_EX_CSR, ID_EX_CSR_write, csrsel, ID_EX_CSR_read,
-        output EX_CSR_res, EX_CSR_addr, EX_CSR_write, EX_MEM_CSR, EX_MEM_CSR_read
+        output EX_CSR_res, EX_CSR_addr, EX_CSR_write, EX_MEM_CSR, EX_MEM_CSR_read,
+        input ID_EX_comp_sig
     );
     
     //modport for memory stage

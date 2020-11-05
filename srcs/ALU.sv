@@ -67,7 +67,8 @@ module ALU
   output logic [31:0] res,
   output logic        comp_res, 
   output logic [31:0] CSR_res, 
-  input logic [31:0] CSR_in);
+  input logic [31:0] CSR_in, 
+  input logic ID_EX_comp_sig);
   
   logic [31:0] s;
   logic [32:0] comp_res_temp;
@@ -76,6 +77,10 @@ module ALU
 //  assign comp_res_temp = a - b;
 //  assign comp_res= (a < b);
     assign comp_res_temp = (a < b);
+    
+    logic [31:0] addr_incr;
+    
+    assign addr_incr = ID_EX_comp_sig ? 2 : 4;
 
   always_comb
     case(alusel)
@@ -111,7 +116,7 @@ module ALU
 //    assign res = (ID_EX_lui) ? b : (ID_EX_jal||ID_EX_jalr) ? {24'h000000,ID_EX_pres_adr} : 
 //                                         ((ID_EX_compare&&comp_res_temp) ? 
 //                                          32'h1 : s);
-    assign res = (ID_EX_lui) ? b : (ID_EX_auipc) ? (b + ID_EX_pres_adr[11:0]) :  (ID_EX_jal) ? (ID_EX_pres_adr+4) : (ID_EX_jalr) ? (ID_EX_pres_adr+4) : 
+    assign res = (ID_EX_lui) ? b : (ID_EX_auipc) ? (b + ID_EX_pres_adr[11:0]) :  (ID_EX_jal) ? (ID_EX_pres_adr+addr_incr) : (ID_EX_jalr) ? (ID_EX_pres_adr+addr_incr) : 
                                          ((ID_EX_compare&&comp_res_temp) ? 
                                           32'h1 : s);
 endmodule: ALU

@@ -106,8 +106,8 @@ always_comb begin
 					alusel=3'b000;
 				end
 				3'b001: begin //C.JAL
-					imm = {20'h0, ins[12], ins[8], ins[10:9], ins[6], ins[7], ins[2], ins[11], ins[5:3], 1'b0};
-					rd = 0;
+					imm = ins[12] ? {20'hfffff, ins[12], ins[8], ins[10:9], ins[6], ins[7], ins[2], ins[11], ins[5:3], 1'b0} : {20'h0, ins[12], ins[8], ins[10:9], ins[6], ins[7], ins[2], ins[11], ins[5:3], 1'b0};
+					rd = 1;
 					rs1 = 0;
 					rs2 = 0;
 					jal = (!flush)&&1'b1;
@@ -176,18 +176,20 @@ always_comb begin
 					endcase
 				end
 				3'b101: begin //C.J
-					imm = {20'h0, ins[12], ins[8], ins[10:9], ins[6], ins[7], ins[2], ins[11], ins[5:3], 1'b0};
+					imm = ins[12] ? {20'hfffff, ins[12], ins[8], ins[10:9], ins[6], ins[7], ins[2], ins[11], ins[5:3], 1'b0} : {20'h0, ins[12], ins[8], ins[10:9], ins[6], ins[7], ins[2], ins[11], ins[5:3], 1'b0};
 					jal = (!flush)&&1;
 				end
 				3'b110: begin //C.BEQZ
 					rs1 = RVC_Reg(ins[9:7]);
-					imm = {23'h0, ins[12], ins[6:5], ins[2], ins[11:10], ins[4:3], 1'h0};
+					funct3 = 3'b000;
+					imm = ins[12] ? {23'h7fffff, ins[12], ins[6:5], ins[2], ins[11:10], ins[4:3], 1'h0} : {23'h0, ins[12], ins[6:5], ins[2], ins[11:10], ins[4:3], 1'h0};
 					branch=(!flush)&&1;
 					beq=1;
 				end
 				3'b111: begin //C.BNEZ
 					rs1 = RVC_Reg(ins[9:7]);
-					imm = {23'h0, ins[12], ins[6:5], ins[2], ins[11:10], ins[4:3], 1'h0};
+					funct3 = 3'b001;
+					imm = ins[12] ? {23'h7fffff, ins[12], ins[6:5], ins[2], ins[11:10], ins[4:3], 1'h0} : {23'h0, ins[12], ins[6:5], ins[2], ins[11:10], ins[4:3], 1'h0};
 					branch=(!flush)&&1;
 					bne=1;
 				end

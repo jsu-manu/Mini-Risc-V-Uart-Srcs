@@ -107,7 +107,8 @@ module Execute(main_bus bus);
         .comp_res(comp_res), 
         .CSR_res(CSR_res),
         .CSR_in(bus.ID_EX_CSR), 
-        .csrsel(bus.csrsel)
+        .csrsel(bus.csrsel),
+        .ID_EX_comp_sig(bus.ID_EX_comp_sig)
         );
         
  always_ff @(posedge bus.clk) begin

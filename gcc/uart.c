@@ -15,8 +15,8 @@ char uart_init() {
 	*(base_ptr + 3) = 3; 
 	//set FCR 
 	*(base_ptr + 2) = 1; 
-	//set IER
-	*(base_ptr + 1) = 1; 
+	// //set IER
+	// *(base_ptr + 1) = 1; 
 	return 1; 
 }
 
@@ -28,7 +28,7 @@ void uart_put(char c) {
 void uart_put_blocking(char c) {
 	char s;
 	do {
-		s = uart_poll() & 64;
+		s = uart_poll() & 96;
 	} while (s == 0);
 	uart_put(c);
 }

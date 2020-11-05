@@ -113,13 +113,13 @@ always_ff @(posedge clk) begin
         if (uart_region && (mem_wea | mem_rea)) begin
             uart_last_cond <= 1;
             uart_last_addr <= mem_addr_lower;
-//            uart_last_out <= mbus.uart_dout;
-            case (mem_addr_lower[1:0])
-                2'b00: uart_last_out <= {24'h0, mbus.uart_dout };
-                2'b01: uart_last_out <= {16'h0, mbus.uart_dout, 8'h0 }; 
-                2'b10: uart_last_out <= {8'h0, mbus.uart_dout, 16'h0 };
-                2'b11: uart_last_out <= {mbus.uart_dout, 24'h0 };
-            endcase            
+            uart_last_out <= mbus.uart_dout;
+//            case (mem_addr_lower[1:0])
+//                2'b00: uart_last_out <= {24'h0, mbus.uart_dout };
+//                2'b01: uart_last_out <= {16'h0, mbus.uart_dout, 8'h0 }; 
+//                2'b10: uart_last_out <= {8'h0, mbus.uart_dout, 16'h0 };
+//                2'b11: uart_last_out <= {mbus.uart_dout, 24'h0 };
+//            endcase            
 //            if (mem_addr_lower == 12'h400) uart_dout <= mbus.uart_dout; 
 //            else uart_dout <= {6'b000000, mbus.tx_full, mbus.rx_data_present};
         end else begin
