@@ -1,5 +1,4 @@
-#include"print.h" 
-
+#include"print.h"
 
 void printl(int l[], int llen) {
 	int i = 0; 

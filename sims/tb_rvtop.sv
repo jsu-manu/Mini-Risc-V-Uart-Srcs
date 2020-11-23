@@ -43,48 +43,34 @@ rv_uart_top dut(.*);
 
 always #5 clk=!clk; 
 
-//task readfile(input string fname);
-//begin
-//    int fd, i; 
-//    int idx; 
-//    fd = $fopen(fname, "rb");
-//    idx = 0;
-//    while ($fscanf (fd, "%08x", i) == 1) begin
-//        $display ("%08x: %08x", idx, i);
-//        rxword(i);
-//        idx = idx + 4;
-//    end 
-//    $fclose(fd);
-    
-//end
-//endtask
+int cache_hits = 0;
+int cache_misses = 0; 
+real hit_rate = 0; 
+logic cache_access;
+logic cache_hit;
+logic cache_miss; 
 
+logic done = 0;
 
-//task rxchar(input [7:0] c);
-//begin
-//    while(dut.u0.rx_fifo_full) #10; 
-    
-//    dut.u0.rx_dout = c;
-//    dut.u0.rx_pres = 1'b1;
-//    #10; 
-//    dut.u0.rx_pres = 1'b0;
-//    dut.u0.rx_dout = 8'h00; 
-//    #10;
-//end
-//endtask
+assign cache_access = dut.memcon0.cache_inst.ren | dut.memcon0.cache_inst.wen; 
+assign cache_hit = dut.memcon0.cache_inst.cache_hit; 
+assign cache_miss = dut.memcon0.cache_inst.cache_miss; 
 
-//task rxword(input [31:0] w); 
-//begin
-//    rxchar(w[7:0]); 
-//    rxchar(w[15:8]);
-//    rxchar(w[23:16]);
-//    rxchar(w[31:24]);
-//end
-//endtask
+always_ff @(posedge dut.clk_50M) begin
+	if (cache_access) begin
+		if (cache_hit) cache_hits += 1; 
+		else if (cache_miss) cache_misses += 1; 
+	end
+	
+	if (dut.rv_core.bus.IF_ID_pres_addr == 32'h14 && !dut.rv_core.u2.flush) done = 1;
+end
 
-//    always_ff @(posedge dut.mbus.tx_wen) begin
-//        $strobe("%h", dut.mbus.uart_din);
-//    end
+always_ff @(posedge done) begin
+	hit_rate = real'(cache_hits) / real'(cache_hits + cache_misses); 
+	$display("Total Hits: %d", cache_hits);
+	$display("Total Misses: %d", cache_misses); 
+	$display("Hit Rate: %f", hit_rate); 
+end
 
 initial begin
     $display("Begin simulaton");
