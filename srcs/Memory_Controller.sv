@@ -26,7 +26,23 @@ logic uart_last_cond;
 logic [11:0] uart_last_addr; 
 logic [31:0] uart_last_out;
 
+logic [2:0] cache_storecntrl = 3'b000;
+logic [4:0] cache_loadcntrl = 5'b00100; 
+
+logic [7:0] cell_0_dout, cell_1_dout, cell_2_dout, cell_3_dout;
+logic [7:0] cell_0_din, cell_1_din, cell_2_din, cell_3_din;
+logic [8:0] cell_0_addr, cell_1_addr, cell_2_addr, cell_3_addr;
+logic cell_0_sense_en, cell_1_sense_en, cell_2_sense_en, cell_3_sense_en; 
+logic cell_0_wen, cell_1_wen, cell_2_wen, cell_3_wen;
+
+logic [31:0] cache_mem_dout, cache_mem_din;
+logic cache_mem_ren, cache_mem_wen; 
+logic [31:0] cache_mem_addr;
+
 logic mem_hold;
+
+logic cache_rdy;
+assign mem_hold = ~cache_rdy;
 
 always_comb begin
     clk = rbus.clk;
@@ -95,7 +111,7 @@ end
 
 always_ff @(posedge clk) begin
     if (rst) begin
-        mem_hold <= 0;
+//        mem_hold <= 0;
     end else begin
 //        if ((mem_wea == 1) && (mem_addr_upper == 20'haaaaa)) begin 
 ////            if ((mem_addr_lower == 12'h004)) begin
@@ -127,9 +143,9 @@ always_ff @(posedge clk) begin
         end
         mem_en_last <= mem_en;
         
-        if (mem_hold == 1) begin
-            mem_hold <= 0;
-        end
+//        if (mem_hold == 1) begin
+//            mem_hold <= 0;
+//        end
 //        else if (((mem_rea == 1) || (mem_wea == 1)) && (~mmio_region)) begin
 //            mem_hold <= 1;
 //        end
@@ -206,10 +222,31 @@ end
 //    .douta(imem_dout), .clkb(clk), .enb((mem_wea | mem_rea) & (kernel_region | prog_region)), 
 //    .web(mem_en), .addrb(rbus.mem_addr), .dinb(blkmem_din), .doutb(doutb));  
     
-    Mem_Interface sharedmem(.clk(clk), .imem_en(imem_en), .mem_en((mem_wea | mem_rea) & (~mmio_region)), 
-    	.storecntrl_a(3'b000), .storecntrl_b(rbus.storecntrl), .imem_addr(imem_addr), .imem_din(32'hz), .mem_addr(rbus.mem_addr), 
-    	.mem_din(blkmem_din), .imem_wen(4'b0000), .mem_wen(mem_en), .imem_dout(imem_dout), .mem_dout(doutb) 
+    cache cache_inst(.clk(clk), .rst(rst), .ren(imem_en), .wen(0), .din(0), .addr(imem_addr),
+    	.storecntrl(cache_storecntrl), .loadcntrl(cache_loadcntrl), .cache_rdy(cache_rdy), 
+    	.dout(imem_dout), .mem_dout(cache_mem_dout), .mem_ren(cache_mem_ren), .mem_wen(cache_mem_wen),
+    	.mem_din(cache_mem_din), .mem_addr(cache_mem_addr), .*);
+    
+//    Mem_Interface sharedmem(.clk(clk), .imem_en(imem_en), .mem_en((mem_wea | mem_rea) & (~mmio_region)), 
+//    	.storecntrl_a(3'b000), .storecntrl_b(rbus.storecntrl), .imem_addr(imem_addr), .imem_din(32'hz), .mem_addr(rbus.mem_addr), 
+//    	.mem_din(blkmem_din), .imem_wen(4'b0000), .mem_wen(mem_en), .imem_dout(imem_dout), .mem_dout(doutb) 
+//    	);
+	Mem_Interface sharedmem(.clk(clk), .imem_en(cache_mem_ren), .mem_en((mem_wea | mem_rea) & (~mmio_region)), 
+    	.storecntrl_a(3'b000), .storecntrl_b(rbus.storecntrl), .imem_addr(cache_mem_addr), .imem_din(32'hz), .mem_addr(rbus.mem_addr), 
+    	.mem_din(blkmem_din), .imem_wen(4'b0000), .mem_wen(mem_en), .imem_dout(cache_mem_dout), .mem_dout(doutb) 
     	);
+    	
+    sram_behav cell0(.clk(clk), .rst(rst), .din(cell_0_din), .sense_en(cell_0_sense_en), 
+    	.wen(cell_0_wen), .addr(cell_0_addr), .dout(cell_0_dout));
+    	
+    sram_behav cell1(.clk(clk), .rst(rst), .din(cell_1_din), .sense_en(cell_1_sense_en), 
+    	.wen(cell_1_wen), .addr(cell_1_addr), .dout(cell_1_dout));
+    	
+    sram_behav cell2(.clk(clk), .rst(rst), .din(cell_2_din), .sense_en(cell_2_sense_en), 
+    	.wen(cell_2_wen), .addr(cell_2_addr), .dout(cell_2_dout));
+    	
+    sram_behav cell3(.clk(clk), .rst(rst), .din(cell_3_din), .sense_en(cell_3_sense_en), 
+    	.wen(cell_3_wen), .addr(cell_3_addr), .dout(cell_3_dout));
 
 //Memory_byteaddress mem0(.clk(clk), .rst(rst), .wea(mem_wea), .en(mem_en), .addr(mem_addr_lower), 
 //    .din(mem_din), .dout(mem_dout));
