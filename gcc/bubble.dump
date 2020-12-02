@@ -30,7 +30,7 @@ Disassembly of section .text:
   48:	00f707b3          	add	a5,a4,a5
   4c:	0007a783          	lw	a5,0(a5)
   50:	00078513          	mv	a0,a5
-  54:	17c000ef          	jal	ra,1d0 <print>
+  54:	190000ef          	jal	ra,1e4 <print>
   58:	fec42783          	lw	a5,-20(s0)
   5c:	00178793          	addi	a5,a5,1
   60:	fef42623          	sw	a5,-20(s0)
@@ -38,7 +38,7 @@ Disassembly of section .text:
   68:	fd842783          	lw	a5,-40(s0)
   6c:	fcf748e3          	blt	a4,a5,3c <printl+0x24>
   70:	06900513          	li	a0,105
-  74:	15c000ef          	jal	ra,1d0 <print>
+  74:	170000ef          	jal	ra,1e4 <print>
   78:	00000013          	nop
   7c:	02c12083          	lw	ra,44(sp)
   80:	02812403          	lw	s0,40(sp)
@@ -50,7 +50,7 @@ Disassembly of section .text:
   90:	02112e23          	sw	ra,60(sp)
   94:	02812c23          	sw	s0,56(sp)
   98:	04010413          	addi	s0,sp,64
-  9c:	20800793          	li	a5,520
+  9c:	21c00793          	li	a5,540
   a0:	0007a583          	lw	a1,0(a5)
   a4:	0047a603          	lw	a2,4(a5)
   a8:	0087a683          	lw	a3,8(a5)
@@ -126,20 +126,25 @@ Disassembly of section .text:
  1c0:	fe442583          	lw	a1,-28(s0)
  1c4:	00078513          	mv	a0,a5
  1c8:	e51ff0ef          	jal	ra,18 <printl>
- 1cc:	0000006f          	j	1cc <main+0x140>
+ 1cc:	00000793          	li	a5,0
+ 1d0:	00078513          	mv	a0,a5
+ 1d4:	03c12083          	lw	ra,60(sp)
+ 1d8:	03812403          	lw	s0,56(sp)
+ 1dc:	04010113          	addi	sp,sp,64
+ 1e0:	00008067          	ret
 
-000001d0 <print>:
- 1d0:	fd010113          	addi	sp,sp,-48
- 1d4:	02812623          	sw	s0,44(sp)
- 1d8:	03010413          	addi	s0,sp,48
- 1dc:	fca42e23          	sw	a0,-36(s0)
- 1e0:	fe042623          	sw	zero,-20(s0)
- 1e4:	fdc42783          	lw	a5,-36(s0)
- 1e8:	fec42703          	lw	a4,-20(s0)
- 1ec:	00000713          	li	a4,0
- 1f0:	aaaaa737          	lui	a4,0xaaaaa
- 1f4:	00f72423          	sw	a5,8(a4) # aaaaa008 <_sp0+0xaaaa8dc8>
- 1f8:	00000013          	nop
- 1fc:	02c12403          	lw	s0,44(sp)
- 200:	03010113          	addi	sp,sp,48
- 204:	00008067          	ret
+000001e4 <print>:
+ 1e4:	fd010113          	addi	sp,sp,-48
+ 1e8:	02812623          	sw	s0,44(sp)
+ 1ec:	03010413          	addi	s0,sp,48
+ 1f0:	fca42e23          	sw	a0,-36(s0)
+ 1f4:	fe042623          	sw	zero,-20(s0)
+ 1f8:	fdc42783          	lw	a5,-36(s0)
+ 1fc:	fec42703          	lw	a4,-20(s0)
+ 200:	00000713          	li	a4,0
+ 204:	aaaaa737          	lui	a4,0xaaaaa
+ 208:	00f72423          	sw	a5,8(a4) # aaaaa008 <_sp0+0xaaaa8dc8>
+ 20c:	00000013          	nop
+ 210:	02c12403          	lw	s0,44(sp)
+ 214:	03010113          	addi	sp,sp,48
+ 218:	00008067          	ret

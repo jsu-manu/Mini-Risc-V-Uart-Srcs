@@ -43,6 +43,7 @@ logic mem_hold;
 
 logic cache_rdy;
 assign mem_hold = ~cache_rdy;
+//assign mem_hold = 0;
 
 always_comb begin
     clk = rbus.clk;
@@ -112,7 +113,7 @@ end
 always_ff @(posedge clk) begin
     if (rst) begin
 //        mem_hold <= 0;
-    end else begin
+    end else if (~mem_hold) begin
 //        if ((mem_wea == 1) && (mem_addr_upper == 20'haaaaa)) begin 
 ////            if ((mem_addr_lower == 12'h004)) begin
 ////                disp_wea = mem_din[0]; 
@@ -221,6 +222,10 @@ end
 //  blk_mem_gen_0 sharedmem(.clka(clk), .ena(imem_en), .wea(4'b0000), .addra(imem_addr), .dina(32'hz), 
 //    .douta(imem_dout), .clkb(clk), .enb((mem_wea | mem_rea) & (kernel_region | prog_region)), 
 //    .web(mem_en), .addrb(rbus.mem_addr), .dinb(blkmem_din), .doutb(doutb));  
+
+
+
+
     
     cache cache_inst(.clk(clk), .rst(rst), .ren(imem_en), .wen(0), .din(0), .addr(imem_addr),
     	.storecntrl(cache_storecntrl), .loadcntrl(cache_loadcntrl), .cache_rdy(cache_rdy), 
@@ -231,10 +236,14 @@ end
 //    	.storecntrl_a(3'b000), .storecntrl_b(rbus.storecntrl), .imem_addr(imem_addr), .imem_din(32'hz), .mem_addr(rbus.mem_addr), 
 //    	.mem_din(blkmem_din), .imem_wen(4'b0000), .mem_wen(mem_en), .imem_dout(imem_dout), .mem_dout(doutb) 
 //    	);
-	Mem_Interface sharedmem(.clk(clk), .imem_en(cache_mem_ren), .mem_en((mem_wea | mem_rea) & (~mmio_region)), 
+	Mem_Interface sharedmem(.clk(clk), .imem_en(cache_mem_ren), .mem_en((mem_wea | mem_rea) & (~mmio_region) & ~mem_hold), 
     	.storecntrl_a(3'b000), .storecntrl_b(rbus.storecntrl), .imem_addr(cache_mem_addr), .imem_din(32'hz), .mem_addr(rbus.mem_addr), 
     	.mem_din(blkmem_din), .imem_wen(4'b0000), .mem_wen(mem_en), .imem_dout(cache_mem_dout), .mem_dout(doutb) 
     	);
+    	
+    	
+    	
+    	
     	
     sram_behav cell0(.clk(clk), .rst(rst), .din(cell_0_din), .sense_en(cell_0_sense_en), 
     	.wen(cell_0_wen), .addr(cell_0_addr), .dout(cell_0_dout));

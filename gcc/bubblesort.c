@@ -25,7 +25,6 @@ int main(void) {
 		}
 	}
 	printl(l, llen);
-	while(1);
 	return 0;
 
 }

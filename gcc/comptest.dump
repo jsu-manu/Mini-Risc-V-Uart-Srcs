@@ -6,7 +6,7 @@ Disassembly of section .text:
 
 00000000 <_start>:
    0:	00001117          	auipc	sp,0x1
-   4:	04010113          	addi	sp,sp,64 # 1040 <_sp0>
+   4:	08010113          	addi	sp,sp,128 # 1080 <_sp0>
    8:	00000097          	auipc	ra,0x0
    c:	00c08093          	addi	ra,ra,12 # 14 <_endloop>
   10:	008000ef          	jal	ra,18 <main>
@@ -15,11 +15,21 @@ Disassembly of section .text:
   14:	0000006f          	j	14 <_endloop>
 
 00000018 <main>:
-  18:	00000513          	li	a0,0
-  1c:	00000593          	li	a1,0
-  20:	00004533          	xor	a0,zero,zero
-  24:	000045b3          	xor	a1,zero,zero
-  28:	00a50513          	addi	a0,a0,10
-  2c:	00000013          	nop
-  30:	00a585b3          	add	a1,a1,a0
-  34:	00008067          	ret
+  18:	fe010113          	addi	sp,sp,-32
+  1c:	00812e23          	sw	s0,28(sp)
+  20:	02010413          	addi	s0,sp,32
+  24:	fe042623          	sw	zero,-20(s0)
+  28:	00a00793          	li	a5,10
+  2c:	fef42423          	sw	a5,-24(s0)
+  30:	0100006f          	j	40 <main+0x28>
+  34:	fec42783          	lw	a5,-20(s0)
+  38:	00178793          	addi	a5,a5,1
+  3c:	fef42623          	sw	a5,-20(s0)
+  40:	fec42703          	lw	a4,-20(s0)
+  44:	fe842783          	lw	a5,-24(s0)
+  48:	fef716e3          	bne	a4,a5,34 <main+0x1c>
+  4c:	00000793          	li	a5,0
+  50:	00078513          	mv	a0,a5
+  54:	01c12403          	lw	s0,28(sp)
+  58:	02010113          	addi	sp,sp,32
+  5c:	00008067          	ret

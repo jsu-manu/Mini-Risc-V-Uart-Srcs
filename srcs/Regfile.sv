@@ -46,7 +46,7 @@ module Regfile(main_bus bus);
   always_ff @(posedge bus.clk)begin
     if(bus.Rst)
         regdata[2] <= 1020;
-    if(wen)
+    if(wen && ~bus.mem_hold)
       regdata[bus.MEM_WB_rd] <= bus.WB_res;
   end
   `ifndef SYNTHESIS

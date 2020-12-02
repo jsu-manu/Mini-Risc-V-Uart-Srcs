@@ -3,7 +3,7 @@
 #include"utils.h"
 
 int main(void) {
-	// uart_init(); 
+	 uart_init(); 
 
 	char h[] = "Hello, world!\r\n"; 
 	// // int strlen = 13; 

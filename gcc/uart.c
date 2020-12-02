@@ -69,7 +69,10 @@ void uart_print(char c[])
 	int offset = 0;
 	while(*(ptr + offset) != '\0') {
 		// uart_write_blocking(*(ptr + offset));
-		uart_put_blocking(*(ptr + offset));
+		if (offset == 0)
+			uart_put_blocking(*(ptr + offset));
+		else
+			uart_put(*(ptr + offset));
 		offset++;
 	}
 

@@ -142,7 +142,7 @@ interface main_bus (
     //modport for register file
     modport regfile(
         input clk, adr_rs1, IF_ID_rs2, MEM_WB_rd, Rst,
-        input WB_res, MEM_WB_regwrite,
+        input WB_res, MEM_WB_regwrite, mem_hold,
         output IF_ID_dout_rs1, IF_ID_dout_rs2 
     ); 
         
