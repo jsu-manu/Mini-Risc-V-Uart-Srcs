@@ -42,8 +42,8 @@ logic [31:0] cache_mem_addr;
 logic mem_hold;
 
 logic cache_rdy;
-assign mem_hold = ~cache_rdy;
-//assign mem_hold = 0;
+//assign mem_hold = ~cache_rdy;
+assign mem_hold = 0;
 
 always_comb begin
     clk = rbus.clk;
@@ -227,20 +227,22 @@ end
 
 
     
-    cache cache_inst(.clk(clk), .rst(rst), .ren(imem_en), .wen(0), .din(0), .addr(imem_addr),
-    	.storecntrl(cache_storecntrl), .loadcntrl(cache_loadcntrl), .cache_rdy(cache_rdy), 
-    	.dout(imem_dout), .mem_dout(cache_mem_dout), .mem_ren(cache_mem_ren), .mem_wen(cache_mem_wen),
-    	.mem_din(cache_mem_din), .mem_addr(cache_mem_addr), .*);
     
-//    Mem_Interface sharedmem(.clk(clk), .imem_en(imem_en), .mem_en((mem_wea | mem_rea) & (~mmio_region)), 
-//    	.storecntrl_a(3'b000), .storecntrl_b(rbus.storecntrl), .imem_addr(imem_addr), .imem_din(32'hz), .mem_addr(rbus.mem_addr), 
-//    	.mem_din(blkmem_din), .imem_wen(4'b0000), .mem_wen(mem_en), .imem_dout(imem_dout), .mem_dout(doutb) 
-//    	);
-	Mem_Interface sharedmem(.clk(clk), .imem_en(cache_mem_ren), .mem_en((mem_wea | mem_rea) & (~mmio_region) & ~mem_hold), 
+    
+    Mem_Interface sharedmem(.clk(clk), .imem_en(imem_en), .mem_en((mem_wea | mem_rea) & (~mmio_region)), 
+    	.storecntrl_a(3'b000), .storecntrl_b(rbus.storecntrl), .imem_addr(imem_addr), .imem_din(32'hz), .mem_addr(rbus.mem_addr), 
+    	.mem_din(blkmem_din), .imem_wen(4'b0000), .mem_wen(mem_en), .imem_dout(imem_dout), .mem_dout(doutb) 
+    	);
+
+/*	Mem_Interface sharedmem(.clk(clk), .imem_en(cache_mem_ren), .mem_en((mem_wea | mem_rea) & (~mmio_region) & ~mem_hold), 
     	.storecntrl_a(3'b000), .storecntrl_b(rbus.storecntrl), .imem_addr(cache_mem_addr), .imem_din(32'hz), .mem_addr(rbus.mem_addr), 
     	.mem_din(blkmem_din), .imem_wen(4'b0000), .mem_wen(mem_en), .imem_dout(cache_mem_dout), .mem_dout(doutb) 
     	);
     	
+    cache cache_inst(.clk(clk), .rst(rst), .ren(imem_en), .wen(0), .din(0), .addr(imem_addr),
+    	.storecntrl(cache_storecntrl), .loadcntrl(cache_loadcntrl), .cache_rdy(cache_rdy), 
+    	.dout(imem_dout), .mem_dout(cache_mem_dout), .mem_ren(cache_mem_ren), .mem_wen(cache_mem_wen),
+    	.mem_din(cache_mem_din), .mem_addr(cache_mem_addr), .*);
     	
     	
     	
@@ -256,6 +258,7 @@ end
     	
     sram_behav cell3(.clk(clk), .rst(rst), .din(cell_3_din), .sense_en(cell_3_sense_en), 
     	.wen(cell_3_wen), .addr(cell_3_addr), .dout(cell_3_dout));
+*/
 
 //Memory_byteaddress mem0(.clk(clk), .rst(rst), .wea(mem_wea), .en(mem_en), .addr(mem_addr_lower), 
 //    .din(mem_din), .dout(mem_dout));

@@ -16,7 +16,7 @@ char uart_init() {
 	//set FCR 
 	*(base_ptr + 2) = 1; 
 	// //set IER
-	// *(base_ptr + 1) = 1; 
+	*(base_ptr + 1) = 1; 
 	return 1; 
 }
 

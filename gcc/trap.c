@@ -1,5 +1,6 @@
 #include"trap.h"
 #include"uart.h"
+#include"print.h"
 
 void init_trap() {
 	int i; 
@@ -11,8 +12,13 @@ void init_trap() {
 
 uint m_trap(uint epc, uint mcause, uint status, uint frame) {
 
-	while(1);
-
-	return 0;
+	// char mesg[] = "Trap has been triggered!\n";
+	// uart_print(mesg);
+	// init_trap();
+	// while(1);
+	char s = uart_poll();
+	char c = uart_get();
+	print(c);
+	return epc;
 
 }

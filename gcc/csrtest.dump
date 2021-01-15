@@ -6,29 +6,129 @@ Disassembly of section .text:
 
 00000000 <_start>:
    0:	00000517          	auipc	a0,0x0
-   4:	05050513          	addi	a0,a0,80 # 50 <m_trap_vector>
+   4:	03050513          	addi	a0,a0,48 # 30 <m_trap_vector>
    8:	30551073          	csrw	mtvec,a0
-   c:	00001117          	auipc	sp,0x1
-  10:	07410113          	addi	sp,sp,116 # 1080 <_sp0>
-  14:	00000097          	auipc	ra,0x0
-  18:	01008093          	addi	ra,ra,16 # 24 <_endloop>
-  1c:	00000073          	ecall
-  20:	008000ef          	jal	ra,28 <main>
+   c:	1c000593          	li	a1,448
+  10:	34059073          	csrw	mscratch,a1
+  14:	00001117          	auipc	sp,0x1
+  18:	26c10113          	addi	sp,sp,620 # 1280 <_sp0>
+  1c:	00000097          	auipc	ra,0x0
+  20:	00c08093          	addi	ra,ra,12 # 28 <_endloop>
+  24:	0ca000ef          	jal	ra,ee <main>
 
-00000024 <_endloop>:
-  24:	0000006f          	j	24 <_endloop>
+00000028 <_endloop>:
+  28:	00000073          	ecall
+  2c:	bff5                	j	28 <_endloop>
+	...
 
-00000028 <main>:
-  28:	fe010113          	addi	sp,sp,-32
-  2c:	00812e23          	sw	s0,28(sp)
-  30:	02010413          	addi	s0,sp,32
-  34:	00100793          	li	a5,1
-  38:	fef42623          	sw	a5,-20(s0)
-  3c:	fec42783          	lw	a5,-20(s0)
-  40:	00078513          	mv	a0,a5
-  44:	01c12403          	lw	s0,28(sp)
-  48:	02010113          	addi	sp,sp,32
-  4c:	00008067          	ret
+00000030 <m_trap_vector>:
+  30:	340f9ff3          	csrrw	t6,mscratch,t6
+  34:	000fa023          	sw	zero,0(t6)
+  38:	001fa223          	sw	ra,4(t6)
+  3c:	002fa423          	sw	sp,8(t6)
+  40:	003fa623          	sw	gp,12(t6)
+  44:	004fa823          	sw	tp,16(t6)
+  48:	005faa23          	sw	t0,20(t6)
+  4c:	006fac23          	sw	t1,24(t6)
+  50:	007fae23          	sw	t2,28(t6)
+  54:	028fa023          	sw	s0,32(t6)
+  58:	029fa223          	sw	s1,36(t6)
+  5c:	02afa423          	sw	a0,40(t6)
+  60:	02bfa623          	sw	a1,44(t6)
+  64:	02cfa823          	sw	a2,48(t6)
+  68:	02dfaa23          	sw	a3,52(t6)
+  6c:	02efac23          	sw	a4,56(t6)
+  70:	02ffae23          	sw	a5,60(t6)
+  74:	050fa023          	sw	a6,64(t6)
+  78:	051fa223          	sw	a7,68(t6)
+  7c:	052fa423          	sw	s2,72(t6)
+  80:	053fa623          	sw	s3,76(t6)
+  84:	054fa823          	sw	s4,80(t6)
+  88:	055faa23          	sw	s5,84(t6)
+  8c:	056fac23          	sw	s6,88(t6)
+  90:	057fae23          	sw	s7,92(t6)
+  94:	078fa023          	sw	s8,96(t6)
+  98:	079fa223          	sw	s9,100(t6)
+  9c:	07afa423          	sw	s10,104(t6)
+  a0:	07bfa623          	sw	s11,108(t6)
+  a4:	07cfa823          	sw	t3,112(t6)
+  a8:	07dfaa23          	sw	t4,116(t6)
+  ac:	07efac23          	sw	t5,120(t6)
+  b0:	000f8f13          	mv	t5,t6
+  b4:	34002ff3          	csrr	t6,mscratch
+  b8:	07ff2e23          	sw	t6,124(t5)
+  bc:	340f1073          	csrw	mscratch,t5
+  c0:	34102573          	csrr	a0,mepc
+  c4:	08af2223          	sw	a0,132(t5)
+  c8:	343025f3          	csrr	a1,mtval
+  cc:	34202673          	csrr	a2,mcause
+  d0:	f14026f3          	csrr	a3,mhartid
+  d4:	30002773          	csrr	a4,mstatus
+  d8:	340027f3          	csrr	a5,mscratch
+  dc:	00002117          	auipc	sp,0x2
+  e0:	1a410113          	addi	sp,sp,420 # 2280 <_sp1>
+  e4:	208d                	jal	146 <m_trap>
+	...
 
-00000050 <m_trap_vector>:
-  50:	0000006f          	j	50 <m_trap_vector>
+000000ee <main>:
+  ee:	1101                	addi	sp,sp,-32
+  f0:	ce22                	sw	s0,28(sp)
+  f2:	1000                	addi	s0,sp,32
+  f4:	4785                	li	a5,1
+  f6:	fef42623          	sw	a5,-20(s0)
+  fa:	fec42783          	lw	a5,-20(s0)
+  fe:	853e                	mv	a0,a5
+ 100:	4472                	lw	s0,28(sp)
+ 102:	6105                	addi	sp,sp,32
+ 104:	8082                	ret
+
+00000106 <init_trap>:
+ 106:	1101                	addi	sp,sp,-32
+ 108:	ce22                	sw	s0,28(sp)
+ 10a:	1000                	addi	s0,sp,32
+ 10c:	fe042623          	sw	zero,-20(s0)
+ 110:	a831                	j	12c <init_trap+0x26>
+ 112:	1c000713          	li	a4,448
+ 116:	fec42783          	lw	a5,-20(s0)
+ 11a:	078a                	slli	a5,a5,0x2
+ 11c:	97ba                	add	a5,a5,a4
+ 11e:	0007a023          	sw	zero,0(a5)
+ 122:	fec42783          	lw	a5,-20(s0)
+ 126:	0785                	addi	a5,a5,1
+ 128:	fef42623          	sw	a5,-20(s0)
+ 12c:	fec42703          	lw	a4,-20(s0)
+ 130:	47fd                	li	a5,31
+ 132:	fee7d0e3          	bge	a5,a4,112 <init_trap+0xc>
+ 136:	1c000793          	li	a5,448
+ 13a:	0807a023          	sw	zero,128(a5)
+ 13e:	0001                	nop
+ 140:	4472                	lw	s0,28(sp)
+ 142:	6105                	addi	sp,sp,32
+ 144:	8082                	ret
+
+00000146 <m_trap>:
+ 146:	7139                	addi	sp,sp,-64
+ 148:	de06                	sw	ra,60(sp)
+ 14a:	dc22                	sw	s0,56(sp)
+ 14c:	0080                	addi	s0,sp,64
+ 14e:	fca42623          	sw	a0,-52(s0)
+ 152:	fcb42423          	sw	a1,-56(s0)
+ 156:	fcc42223          	sw	a2,-60(s0)
+ 15a:	fcd42023          	sw	a3,-64(s0)
+ 15e:	19400793          	li	a5,404
+ 162:	0007a803          	lw	a6,0(a5)
+ 166:	43c8                	lw	a0,4(a5)
+ 168:	478c                	lw	a1,8(a5)
+ 16a:	47d0                	lw	a2,12(a5)
+ 16c:	4b94                	lw	a3,16(a5)
+ 16e:	4bd8                	lw	a4,20(a5)
+ 170:	fd042a23          	sw	a6,-44(s0)
+ 174:	fca42c23          	sw	a0,-40(s0)
+ 178:	fcb42e23          	sw	a1,-36(s0)
+ 17c:	fec42023          	sw	a2,-32(s0)
+ 180:	fed42223          	sw	a3,-28(s0)
+ 184:	fee42423          	sw	a4,-24(s0)
+ 188:	0187d783          	lhu	a5,24(a5)
+ 18c:	fef41623          	sh	a5,-20(s0)
+ 190:	3f9d                	jal	106 <init_trap>
+ 192:	a001                	j	192 <m_trap+0x4c>

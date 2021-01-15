@@ -19,18 +19,25 @@ interface riscv_bus (
     logic [31:0] imem_dout, imem_din; 
     
     logic mem_hold;
+    logic uart_IRQ;
+    logic trapping;
     
     modport core(
         input clk, Rst, debug, prog, debug_input, mem_dout, imem_dout, //rx,
         output debug_output, mem_wea, mem_rea, mem_en, mem_addr, mem_din, imem_en, 
         output imem_addr, imem_din, imem_prog_ena, storecntrl,
-        input key, input mem_hold
+        input key, input mem_hold, uart_IRQ, 
+        output trapping
     );
     
     modport memcon(
         input clk, Rst, mem_wea, mem_en, mem_addr, mem_din, imem_en, 
         input imem_addr, imem_din, imem_prog_ena, mem_rea, storecntrl,
         output mem_dout, imem_dout, mem_hold
+    );
+    
+    modport uart(
+    	output uart_IRQ
     );
 endinterface
 
@@ -135,7 +142,7 @@ clk_div cdiv(clk,Rst,16'd500,clk_7seg);
 
 //`endif
   
-  assign led = {14'h0, mbus.tx_full, mbus.rx_data_present};
+  assign led = {14'h0, rbus.trapping, rbus.uart_IRQ};
   
   assign debug_output = (prog | debug ) ? rbus.debug_output : mbus.disp_out;
   
@@ -154,7 +161,7 @@ clk_div cdiv(clk,Rst,16'd500,clk_7seg);
     
     Debug_Display d0(mbus.display);
     
-    uart_controller u0(mbus.uart);
+    uart_controller u0(mbus.uart, rbus.uart);
     
 //    Memory_byteaddress mem0(.clk(clk_50M), .rst(Rst), .wea(mem_wea), .en(mem_en), .addr(mem_addr),
 //        .din(mem_din), .dout(mem_dout));

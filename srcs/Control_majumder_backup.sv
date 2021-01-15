@@ -45,6 +45,7 @@ module Control
  (input  logic [6:0] opcode,
   input  logic [2:0] funct3,
   input  logic [6:0] funct7,
+  input  logic [11:0] funct12,
   input  logic ins_zero,
   input  logic flush,
   input  logic hazard,
@@ -72,7 +73,8 @@ module Control
   output logic      illegal_ins, 
   output logic [2:0] csrsel, 
   output logic      csrwrite, 
-  output logic      csrread);
+  output logic      csrread,
+  output logic trap_ret);
 
   // intruction classification signal
   
@@ -103,7 +105,7 @@ module Control
 	csrsel = 3'b000;
 	csrwrite = 1'b0;
 	csrread = 0;
-  
+  	trap_ret = 0;
     unique case (opcode)
       7'b0000011:               // load
         begin
@@ -263,6 +265,11 @@ module Control
 //            csrwrite = ~stall;
 //            csrread = ~stall;
             unique case(funct3) 
+            	3'b000: begin //MRET/SRET/URET
+            		if (funct12 == 12'h302) begin //MRET
+            			trap_ret = 1; 
+            		end
+            	end
                 3'b001: begin //CSRRW
 //                regwrite=stall ? 1'b0: 1'b1;
                     regwrite = (rd == 0) ? 1'b0 : ~stall;

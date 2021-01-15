@@ -79,7 +79,7 @@ assign imem_incr = bus.branch? bus.branoff : 12'h004;
 //assign next_addr=bus.trap ? bus.mtvec : bus.IF_ID_jalr?bus.branoff: bus.IF_ID_jal ? (bus.IF_ID_pres_addr + pc_incr)
 //     : bus.branch ? (bus.IF_ID_pres_addr+pc_incr) : (bus.IF_ID_pres_addr+pc_incr);
      
-assign next_addr = branch_next ? branch_addr : bus.IF_ID_pres_addr + pc_incr;
+assign next_addr = bus.trap_ret ? bus.mepc : bus.trigger_trap ? bus.mtvec : branch_next ? branch_addr : bus.IF_ID_pres_addr + pc_incr;
      
 assign En_sig=(bus.PC_En&&(!bus.debug)&&(!bus.dbg)&&(!bus.mem_hold)); 
 //assign En_sig=(bus.PC_En&&(!bus.dbg));
@@ -98,16 +98,6 @@ assign bus.imem_addr = addr_in;
 
 //assign bus.IF_ID_pres_addr = pres_addr;
 
-//always_comb begin
-//	if (bus.Rst) bus.ins = 32'h00000000;
-//	else if (lower) begin
-//		if (comp) bus.ins = {16'h0, memdout[15:0]};
-//		else bus.ins = memdout; 
-//	end else begin
-//		if (comp) bus.ins = {16'h0, memdout[31:16]};
-//		else bus.ins = {memdout[15:0], ins_last[31:16]};
-//	end
-//end
 
 always_ff @(posedge bus.clk) begin
 	if (bus.Rst || bus.memcon_prog_ena) begin
@@ -122,9 +112,10 @@ always_ff @(posedge bus.clk) begin
 	else if (En_sig) begin
 	   bg <= 0;
 	   bus.IF_ID_pres_addr <= next_addr; 
-	   branch_addr <= bus.trap ? bus.mtvec : bus.IF_ID_jalr ? bus.branoff : bus.IF_ID_jal ? (bus.IF_ID_pres_addr + bus.branoff) 
+	   branch_addr <= bus.IF_ID_jalr ? bus.branoff : bus.IF_ID_jal ? (bus.IF_ID_pres_addr + bus.branoff) 
 	   	: bus.branch ? (bus.IF_ID_pres_addr + bus.branoff) : 0;
-	   	branch_next <= bus.trap | bus.IF_ID_jalr | bus.IF_ID_jal | bus.branch; 
+//	   	branch_next <= bus.trap | bus.IF_ID_jalr | bus.IF_ID_jal | bus.branch; 
+	   branch_next <= bus.IF_ID_jalr | bus.IF_ID_jal | bus.branch; 
 //	   pres_addr <= next_addr;
 //	   pres_addr <= next_addr;
 //        if (imem_en) begin

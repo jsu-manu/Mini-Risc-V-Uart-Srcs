@@ -25,7 +25,7 @@
 
 //Interface bus between all pipeline stages
 interface main_bus (
-    input logic clk, Rst, debug, dbg, prog, mem_hold, //rx, //addr_dn, addr_up,
+    input logic clk, Rst, debug, dbg, prog, mem_hold, uart_IRQ, //rx, //addr_dn, addr_up,
     input logic[4:0] debug_input, 
     input logic [95:0] key
 //    output logic tx
@@ -117,8 +117,39 @@ interface main_bus (
     logic [2:0] csrsel;
     
     logic trap, ecall;
-    logic [31:0] mtvec;
+    logic [31:0] mtvec, mepc;
     
+    logic trapping, trigger_trap, trap_ret, trigger_trap_ret; 
+    
+//    assign rbus.trapping = trapping;
+    
+//    assign trigger_trap = (~trapping) & trap;
+
+	assign trap = uart_IRQ | ecall;
+
+	always_ff @(posedge clk) begin
+		if (Rst) begin
+			trapping <= 0;
+			trigger_trap <= 0;
+			trigger_trap_ret <= 0;
+		end else begin
+			if (trap & (~trapping)) begin
+				trapping <= 1;
+				trigger_trap <= 1;
+			end else trigger_trap <= 0;
+			
+			if (trap_ret & (trapping)) begin
+				trapping <= 0;
+				trigger_trap_ret <= 1;
+			end else trigger_trap_ret <= 0;
+		end
+	end
+    
+//    always_ff @(posedge trigger_trap or posedge trap_ret or posedge Rst) begin
+//    	if (Rst) trapping <= 0;
+//    	else if (trigger_trap) trapping <= 1;
+//    	else if (trap_ret) trapping <= 0;
+//    end
 //    logic ID_EX_CSR_write;
 
     //modport declarations. These ensure each pipeline stage only sees and has access to the 
@@ -130,12 +161,12 @@ interface main_bus (
     modport fetch(
         input clk, PC_En, debug, prog, Rst, branch, IF_ID_jalr, IF_ID_jal,
         input dbg, mem_hold,
-        input trap, mtvec,
+        input trap, mtvec, mepc, trigger_trap,  trap_ret, trigger_trap_ret,
         //input rx,
-        input uart_dout, memcon_prog_ena,
+        input uart_dout, memcon_prog_ena, 
         input debug_input, branoff,
         output IF_ID_pres_addr, ins, 
-        input imem_dout, 
+        input imem_dout,
         output imem_en, imem_addr, comp_sig
     );
     
@@ -151,7 +182,7 @@ interface main_bus (
         input clk, Rst, dbg, ins, IF_ID_pres_addr, MEM_WB_rd, WB_res, mem_hold, comp_sig,
         input EX_MEM_memread, EX_MEM_regwrite, MEM_WB_regwrite, EX_MEM_alures,
         input EX_MEM_rd, IF_ID_dout_rs1, IF_ID_dout_rs2, 
-        input IF_ID_CSR, trap,
+        input IF_ID_CSR, trap, trigger_trap,
         inout ID_EX_memread, ID_EX_regwrite,
         output ID_EX_pres_addr, IF_ID_jalr, ID_EX_jalr, branch, IF_ID_jal,
         output IF_ID_rs1, IF_ID_rs2, IF_ID_rd,
@@ -160,7 +191,8 @@ interface main_bus (
         output ID_EX_storecntrl, ID_EX_loadcntrl, ID_EX_cmpcntrl,
         output ID_EX_auipc, ID_EX_lui, ID_EX_alusrc, 
         output ID_EX_memwrite, ID_EX_imm, ID_EX_compare, ID_EX_jal, 
-        output IF_ID_CSR_addr, ID_EX_CSR_addr, ID_EX_CSR, ID_EX_CSR_write, csrsel, ID_EX_CSR_read, ecall, ID_EX_comp_sig
+        output IF_ID_CSR_addr, ID_EX_CSR_addr, ID_EX_CSR, ID_EX_CSR_write, csrsel, ID_EX_CSR_read, ecall, ID_EX_comp_sig, 
+        output trap_ret
     );
      
     //modport for execute stage    
@@ -272,7 +304,8 @@ module RISCVcore_uart(
         //rx = rbus.rx; 
         prog = rbus.prog; 
         debug_input = rbus.debug_input; 
-        rbus.debug_output = debug_output; 
+//        rbus.debug_output = debug_output; 
+		rbus.debug_output = bus.mepc;
         rbus.mem_wea = mem_wea; 
         rbus.mem_rea = bus.mem_rea;
         rbus.mem_en = mem_en; 
@@ -287,9 +320,10 @@ module RISCVcore_uart(
     end
     
     
-    main_bus bus(.key(rbus.key), .mem_hold(rbus.mem_hold), .*);
+    main_bus bus(.key(rbus.key), .mem_hold(rbus.mem_hold), .uart_IRQ(rbus.uart_IRQ), .*);
     
      assign rbus.storecntrl = bus.EX_MEM_storecntrl;
+     assign rbus.trapping = bus.trapping;
     
     assign mem_wea = bus.mem_wea;
 //    assign mem_clk = bus.clk;
@@ -305,7 +339,7 @@ module RISCVcore_uart(
     //debugging resister
     assign bus.adr_rs1=debug ? debug_input:bus.IF_ID_rs1;
     
-    assign bus.trap = trap;
+//    assign bus.trap = trap;
     
 //    always_comb begin : stackstuff
 //        bus.push = (bus.IF_ID_jal | bus.IF_ID_jalr) & (bus.IF_ID_rd != 0);
@@ -317,7 +351,8 @@ module RISCVcore_uart(
     always_ff @(posedge clk) begin
         if(Rst) begin
             debug_output<=32'h00000000;
-            trap <= 0;
+//            trap <= 0;
+//            bus.trapping <= 0;
         end
         else if (prog) begin //debug instruction memory
             debug_output<=bus.ins;
@@ -346,7 +381,7 @@ module RISCVcore_uart(
     
 //    ra_stack uS(bus.rstack);
     
-//    CSR uC(.bus(bus));
+    CSR uC(.bus(bus));
     
 //    UART_Programmer uart(bus.UART_Programmer);
    
