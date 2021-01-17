@@ -1,24 +1,22 @@
-#include"uart.h" 
-// #include"print.h" 
-#include"utils.h"
+#include "uart.h"
 
-int main(void) {
-	uart_init(); 
+int main(void)
+{
+	uart_init();
 
-	char h[] = "1234567890abcdefghijk\r\n"; 
-	// // int strlen = 13; 
+	char h[] = "1234567890abcdefghijk\r\n";
 	uart_print(h);
-	
+
 	char numchar[12];
-	int num = 32; 
+	int num = 32;
 
 	itoa(num, numchar);
 	uart_print(numchar);
 
-	char c; 
-	while(1) {
+	char c;
+	while (1)
+	{
 		c = uart_read_blocking();
-		// uart_write_blocking(c);
 		uart_put(c);
 	}
 	return 0;

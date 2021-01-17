@@ -78,7 +78,7 @@ void readline(char c[], int len)
     {
         char tmp;
         tmp = uart_read_blocking();
-        
+
         if (tmp == 13)
         {
             for (int j = i; j < len; j++)
@@ -127,7 +127,7 @@ int atoi(char *c)
         }
         else if ((tmp >= 0) && (tmp <= 9))
         {
-            sum += multiply(tmp, mult);
+            sum += tmp * mult;
         }
         else
         {
@@ -161,24 +161,20 @@ void itoa(int a, char *c)
     p1 = 1;
 
     while (divide(a, p1) > 0)
-    {
-        p1 = multiply(p1, 10);
-    }
+        p1 = (p1 * 10);
 
-    p2 = divide(p1, 10);
+    p2 = p1 / 10;
 
     while (1)
     {
-        int tmp = divide(modulo(a, p1), p2);
+        int tmp = ((a % p1) / p2);
         c[idx] = tmp + INT_OFFSET;
         idx++;
 
         if ((p2 == 1) || (idx == 12))
-        {
             return;
-        }
 
-        p2 = divide(p2, 10);
-        p1 = divide(p1, 10);
+        p2 = (p2 / 10);
+        p1 = (p1 / 10);
     }
 }
