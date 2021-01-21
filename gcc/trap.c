@@ -19,6 +19,7 @@ uint m_trap(uint epc, uint mcause, uint status, uint frame) {
 	char s = uart_poll();
 	char c = uart_get();
 	print(c);
+	uart_put(c);
 	return epc;
 
 }

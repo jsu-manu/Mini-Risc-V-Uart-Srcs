@@ -9,7 +9,7 @@ int main(void) {
 	char h[] = "Hello, world!\r\n"; 
 	// // int strlen = 13; 
 	uart_print(h);
-	print('a');
+	// print('a');
 	
 	// char numchar[12];
 	// int num = 32; 
