@@ -32,12 +32,10 @@ m_trap_vector:
 	# sw a0, 132(t5) 
 	csrr a1, mtval
 	csrr a2, mcause
-	csrr a3, mhartid
-	csrr a4, mstatus
-	csrr a5, mscratch 
+	#csrr a3, mhartid
+	csrr a3, mstatus
+	csrr a4, mscratch 
 	la   sp, _sp1
-
-
 
 	call m_trap
 
@@ -49,5 +47,6 @@ m_trap_vector:
 		load_gp %i
 		.set i, i+1 
 	.endr 
+
 
 	mret

@@ -26,7 +26,7 @@ entity gh_uart_Rx_8bit is
 		rst       : in std_logic;
 		BRCx16    : in std_logic; -- 16x clock enable
 		sRX       : in std_logic; 
-		num_bits  : in integer;
+		num_bits  : in integer RANGE 0 to 8;
 		Parity_EN : in std_logic;
 		Parity_EV : in std_logic;
 		Parity_ER : out std_logic;

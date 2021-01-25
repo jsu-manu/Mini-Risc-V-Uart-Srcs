@@ -304,8 +304,8 @@ module RISCVcore_uart(
         //rx = rbus.rx; 
         prog = rbus.prog; 
         debug_input = rbus.debug_input; 
-//        rbus.debug_output = debug_output; 
-		rbus.debug_output = bus.mtvec;
+        rbus.debug_output = (rbus.debug_input == 0) ? bus.IF_ID_pres_addr : debug_output; 
+//		rbus.debug_output = bus.IF_ID_pres_addr;//bus.mtvec;
         rbus.mem_wea = mem_wea; 
         rbus.mem_rea = bus.mem_rea;
         rbus.mem_en = mem_en; 

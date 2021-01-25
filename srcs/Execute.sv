@@ -67,6 +67,10 @@ module Execute(main_bus bus);
   logic [31:0] rs2_mod_final;//new
   
   logic [31:0] CSR_res;
+  
+  logic [31:0] CSR_mod; 
+  
+  
  
   
 
@@ -87,6 +91,8 @@ module Execute(main_bus bus);
          .imm(bus.ID_EX_imm),
          .rs1(bus.ID_EX_dout_rs1),
          .rs2(bus.ID_EX_dout_rs2),
+         .EX_MEM_CSR(bus.EX_MEM_CSR),
+         .EX_MEM_CSR_read(bus.EX_MEM_CSR_read),
          .fw_rs1(ALUop1),
          .fw_rs2(ALUop2),
          .rs2_mod(rs2_mod)

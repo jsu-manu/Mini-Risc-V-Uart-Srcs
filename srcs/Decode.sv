@@ -377,7 +377,7 @@ assign bus.ecall = flush ? 1'b0 : (bus.ins == 32'b000000000000000000000000011100
                 bus.ID_EX_dout_rs2<=bus.IF_ID_dout_rs2;
                 bus.ID_EX_imm<=IF_ID_imm;
                 bus.ID_EX_pres_addr<=bus.IF_ID_pres_addr;
-                flush_sig<=branch_taken_sig;// | bus.trigger_trap;
+                flush_sig<=branch_taken_sig;// | bus.trap_ret;// | bus.trigger_trap;
                 bus.ID_EX_jal<=IF_ID_jal;
                 bus.ID_EX_jalr<=IF_ID_jalr_sig;
                 bus.ID_EX_lui<=IF_ID_lui;
@@ -426,7 +426,7 @@ assign bus.ecall = flush ? 1'b0 : (bus.ins == 32'b000000000000000000000000011100
     assign bus.ID_EX_memread=ID_EX_memread_sig;
     assign bus.ID_EX_regwrite=ID_EX_regwrite_sig;
    // assign ID_EX_rd=ID_EX_rd_sig;
-    assign flush=flush_sig | bus.trigger_trap;
+    assign flush=flush_sig | bus.trigger_trap | bus.trap_ret;
     assign bus.IF_ID_jalr=IF_ID_jalr_sig;
     assign bus.IF_ID_jal = IF_ID_jal;
 endmodule

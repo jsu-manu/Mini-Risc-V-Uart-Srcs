@@ -80,7 +80,7 @@ module CSR (
 //               triggerTrap();
 //				csr[8'h41] <= bus.IF_ID_pres_addr; 
 //				csr[8'h42] <= build_mcause(); 
-				mepc <= bus.IF_ID_pres_addr;
+				mepc <= bus.ID_EX_pres_addr;
 				mcause <= build_mcause(); 
 			
             end

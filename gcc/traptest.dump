@@ -1,0 +1,171 @@
+
+traptest.elf:     file format elf32-littleriscv
+
+
+Disassembly of section .text:
+
+00000000 <_start>:
+   0:	00000517          	auipc	a0,0x0
+   4:	12050513          	addi	a0,a0,288 # 120 <m_trap_vector>
+   8:	30551073          	csrw	mtvec,a0
+   c:	28000593          	li	a1,640
+  10:	34059073          	csrw	mscratch,a1
+  14:	00001117          	auipc	sp,0x1
+  18:	32c10113          	addi	sp,sp,812 # 1340 <_sp0>
+  1c:	00000097          	auipc	ra,0x0
+  20:	00c08093          	addi	ra,ra,12 # 28 <_endloop>
+  24:	008000ef          	jal	ra,2c <main>
+
+00000028 <_endloop>:
+  28:	0000006f          	j	28 <_endloop>
+
+0000002c <main>:
+  2c:	00a00513          	li	a0,10
+  30:	01450513          	addi	a0,a0,20
+  34:	00000073          	ecall
+  38:	00a50513          	addi	a0,a0,10
+
+0000003c <loop1>:
+  3c:	0000006f          	j	3c <loop1>
+  40:	fedff06f          	j	2c <main>
+
+00000044 <print>:
+  44:	fd010113          	addi	sp,sp,-48
+  48:	02812623          	sw	s0,44(sp)
+  4c:	03010413          	addi	s0,sp,48
+  50:	fca42e23          	sw	a0,-36(s0)
+  54:	fe042623          	sw	zero,-20(s0)
+  58:	fdc42783          	lw	a5,-36(s0)
+  5c:	fec42703          	lw	a4,-20(s0)
+  60:	00000713          	li	a4,0
+  64:	aaaaa737          	lui	a4,0xaaaaa
+  68:	00f72423          	sw	a5,8(a4) # aaaaa008 <_sp1+0xaaaa7cc8>
+  6c:	00000013          	nop
+  70:	02c12403          	lw	s0,44(sp)
+  74:	03010113          	addi	sp,sp,48
+  78:	00008067          	ret
+
+0000007c <init_trap>:
+  7c:	fe010113          	addi	sp,sp,-32
+  80:	00812e23          	sw	s0,28(sp)
+  84:	02010413          	addi	s0,sp,32
+  88:	fe042623          	sw	zero,-20(s0)
+  8c:	0240006f          	j	b0 <init_trap+0x34>
+  90:	28000713          	li	a4,640
+  94:	fec42783          	lw	a5,-20(s0)
+  98:	00279793          	slli	a5,a5,0x2
+  9c:	00f707b3          	add	a5,a4,a5
+  a0:	0007a023          	sw	zero,0(a5)
+  a4:	fec42783          	lw	a5,-20(s0)
+  a8:	00178793          	addi	a5,a5,1
+  ac:	fef42623          	sw	a5,-20(s0)
+  b0:	fec42703          	lw	a4,-20(s0)
+  b4:	01f00793          	li	a5,31
+  b8:	fce7dce3          	bge	a5,a4,90 <init_trap+0x14>
+  bc:	28000793          	li	a5,640
+  c0:	0807a023          	sw	zero,128(a5)
+  c4:	00000013          	nop
+  c8:	01c12403          	lw	s0,28(sp)
+  cc:	02010113          	addi	sp,sp,32
+  d0:	00008067          	ret
+
+000000d4 <m_trap>:
+  d4:	fe010113          	addi	sp,sp,-32
+  d8:	00112e23          	sw	ra,28(sp)
+  dc:	00812c23          	sw	s0,24(sp)
+  e0:	02010413          	addi	s0,sp,32
+  e4:	fea42623          	sw	a0,-20(s0)
+  e8:	feb42423          	sw	a1,-24(s0)
+  ec:	fec42223          	sw	a2,-28(s0)
+  f0:	fed42023          	sw	a3,-32(s0)
+  f4:	06100513          	li	a0,97
+  f8:	f4dff0ef          	jal	ra,44 <print>
+  fc:	fec42783          	lw	a5,-20(s0)
+ 100:	00478793          	addi	a5,a5,4
+ 104:	00078513          	mv	a0,a5
+ 108:	01c12083          	lw	ra,28(sp)
+ 10c:	01812403          	lw	s0,24(sp)
+ 110:	02010113          	addi	sp,sp,32
+ 114:	00008067          	ret
+	...
+
+00000120 <m_trap_vector>:
+ 120:	340f9ff3          	csrrw	t6,mscratch,t6
+ 124:	000fa023          	sw	zero,0(t6)
+ 128:	001fa223          	sw	ra,4(t6)
+ 12c:	002fa423          	sw	sp,8(t6)
+ 130:	003fa623          	sw	gp,12(t6)
+ 134:	004fa823          	sw	tp,16(t6)
+ 138:	005faa23          	sw	t0,20(t6)
+ 13c:	006fac23          	sw	t1,24(t6)
+ 140:	007fae23          	sw	t2,28(t6)
+ 144:	028fa023          	sw	s0,32(t6)
+ 148:	029fa223          	sw	s1,36(t6)
+ 14c:	02afa423          	sw	a0,40(t6)
+ 150:	02bfa623          	sw	a1,44(t6)
+ 154:	02cfa823          	sw	a2,48(t6)
+ 158:	02dfaa23          	sw	a3,52(t6)
+ 15c:	02efac23          	sw	a4,56(t6)
+ 160:	02ffae23          	sw	a5,60(t6)
+ 164:	050fa023          	sw	a6,64(t6)
+ 168:	051fa223          	sw	a7,68(t6)
+ 16c:	052fa423          	sw	s2,72(t6)
+ 170:	053fa623          	sw	s3,76(t6)
+ 174:	054fa823          	sw	s4,80(t6)
+ 178:	055faa23          	sw	s5,84(t6)
+ 17c:	056fac23          	sw	s6,88(t6)
+ 180:	057fae23          	sw	s7,92(t6)
+ 184:	078fa023          	sw	s8,96(t6)
+ 188:	079fa223          	sw	s9,100(t6)
+ 18c:	07afa423          	sw	s10,104(t6)
+ 190:	07bfa623          	sw	s11,108(t6)
+ 194:	07cfa823          	sw	t3,112(t6)
+ 198:	07dfaa23          	sw	t4,116(t6)
+ 19c:	07efac23          	sw	t5,120(t6)
+ 1a0:	000f8f13          	mv	t5,t6
+ 1a4:	34002ff3          	csrr	t6,mscratch
+ 1a8:	07ff2e23          	sw	t6,124(t5)
+ 1ac:	340f1073          	csrw	mscratch,t5
+ 1b0:	34102573          	csrr	a0,mepc
+ 1b4:	343025f3          	csrr	a1,mtval
+ 1b8:	34202673          	csrr	a2,mcause
+ 1bc:	300026f3          	csrr	a3,mstatus
+ 1c0:	34002773          	csrr	a4,mscratch
+ 1c4:	00002117          	auipc	sp,0x2
+ 1c8:	17c10113          	addi	sp,sp,380 # 2340 <_sp1>
+ 1cc:	f09ff0ef          	jal	ra,d4 <m_trap>
+ 1d0:	34151073          	csrw	mepc,a0
+ 1d4:	34002ff3          	csrr	t6,mscratch
+ 1d8:	004fa083          	lw	ra,4(t6)
+ 1dc:	008fa103          	lw	sp,8(t6)
+ 1e0:	00cfa183          	lw	gp,12(t6)
+ 1e4:	010fa203          	lw	tp,16(t6)
+ 1e8:	014fa283          	lw	t0,20(t6)
+ 1ec:	018fa303          	lw	t1,24(t6)
+ 1f0:	01cfa383          	lw	t2,28(t6)
+ 1f4:	020fa403          	lw	s0,32(t6)
+ 1f8:	024fa483          	lw	s1,36(t6)
+ 1fc:	028fa503          	lw	a0,40(t6)
+ 200:	02cfa583          	lw	a1,44(t6)
+ 204:	030fa603          	lw	a2,48(t6)
+ 208:	034fa683          	lw	a3,52(t6)
+ 20c:	038fa703          	lw	a4,56(t6)
+ 210:	03cfa783          	lw	a5,60(t6)
+ 214:	040fa803          	lw	a6,64(t6)
+ 218:	044fa883          	lw	a7,68(t6)
+ 21c:	048fa903          	lw	s2,72(t6)
+ 220:	04cfa983          	lw	s3,76(t6)
+ 224:	050faa03          	lw	s4,80(t6)
+ 228:	054faa83          	lw	s5,84(t6)
+ 22c:	058fab03          	lw	s6,88(t6)
+ 230:	05cfab83          	lw	s7,92(t6)
+ 234:	060fac03          	lw	s8,96(t6)
+ 238:	064fac83          	lw	s9,100(t6)
+ 23c:	068fad03          	lw	s10,104(t6)
+ 240:	06cfad83          	lw	s11,108(t6)
+ 244:	070fae03          	lw	t3,112(t6)
+ 248:	074fae83          	lw	t4,116(t6)
+ 24c:	078faf03          	lw	t5,120(t6)
+ 250:	07cfaf83          	lw	t6,124(t6)
+ 254:	30200073          	mret
+	...

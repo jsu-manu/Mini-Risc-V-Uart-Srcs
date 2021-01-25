@@ -30,7 +30,7 @@ entity gh_uart_Tx_8bit is
 		xBRC      : in std_logic; -- x clock enable
 		D_RYn     : in std_logic; -- data ready 
 		D         : in std_logic_vector(7 downto 0);
-		num_bits  : in integer:= 8; -- number of bits in transfer
+		num_bits  : in integer RANGE 0 to 8 := 8; -- number of bits in transfer
 		Break_CB  : in std_logic;
 		stopB     : in std_logic;
 		Parity_EN : in std_logic;

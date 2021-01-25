@@ -53,10 +53,11 @@ module Regfile(main_bus bus);
     integer i;
     initial begin
       for(i=0; i<32 ;i=i+1)begin
-        if (i == 2)
-            regdata[i] = 511; 
-        else
-            regdata[i] = $random;
+      	regdata[i] = 0;
+//        if (i == 2)
+//            regdata[i] = 511; 
+//        else
+//            regdata[i] = $random;
       end
         end
       `endif

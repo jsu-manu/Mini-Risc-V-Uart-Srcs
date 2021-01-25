@@ -123,7 +123,7 @@ COMPONENT gh_uart_Tx_8bit is
 		xBRC      : in std_logic; -- x clock enable
 		D_RYn     : in std_logic; -- data ready 
 		D         : in std_logic_vector(7 downto 0);
-		num_bits  : in integer:= 8; -- number of bits in transfer
+		num_bits  : in integer RANGE 0 to 8 := 8; -- number of bits in transfer
 		Break_CB  : in std_logic;
 		stopB     : in std_logic;
 		Parity_EN : in std_logic;
@@ -140,7 +140,7 @@ COMPONENT gh_uart_Rx_8bit is
 		rst       : in std_logic;
 		BRCx16    : in std_logic; -- 16x clock enable
 		sRX       : in std_logic; 
-		num_bits  : in integer;
+		num_bits  : in integer RANGE 0 to 8;
 		Parity_EN : in std_logic;
 		Parity_EV : in std_logic;
 		Parity_ER : out std_logic;
@@ -279,7 +279,7 @@ END COMPONENT;
 	signal RD_LSR   : std_logic;
 	signal LSR_CLR  : std_logic;
 	
-	signal num_bits  : integer:=0;
+	signal num_bits  : integer RANGE 0 to 8 :=0;
 	signal stopB     : std_logic;
 	signal Parity_EN : std_logic;
 	signal Parity_OD : std_logic;

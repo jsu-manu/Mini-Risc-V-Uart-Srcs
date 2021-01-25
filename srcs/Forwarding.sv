@@ -49,6 +49,8 @@ module Forwarding
   input  logic [31:0] imm,
   input  logic [31:0] rs1,
   input  logic [31:0] rs2,
+  input  logic [31:0] EX_MEM_CSR,
+  input  logic        EX_MEM_CSR_read,
   output logic [31:0] fw_rs1,
   output logic [31:0] fw_rs2,
   output logic [31:0] rs2_mod);
@@ -77,7 +79,7 @@ module Forwarding
   always_comb
     case(sel_fw1)
       2'b00 : fw_rs1 = rs1;
-      2'b10 : fw_rs1 = alures;
+      2'b10 : fw_rs1 = EX_MEM_CSR_read ? EX_MEM_CSR : alures;
       2'b11 : fw_rs1 = memres;
       2'b01 : fw_rs1 = wbres;
     endcase
