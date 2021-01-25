@@ -1,0 +1,55 @@
+
+m_ext_dbg.elf:     file format elf32-littleriscv
+
+
+Disassembly of section .text:
+
+00000000 <_start>:
+   0:	00001117          	auipc	sp,0x1
+   4:	0c010113          	addi	sp,sp,192 # 10c0 <_sp0>
+   8:	00000097          	auipc	ra,0x0
+   c:	00c08093          	addi	ra,ra,12 # 14 <_endloop>
+  10:	040000ef          	jal	ra,50 <main>
+
+00000014 <_endloop>:
+  14:	0000006f          	j	14 <_endloop>
+
+00000018 <print>:
+  18:	fd010113          	addi	sp,sp,-48
+  1c:	02812623          	sw	s0,44(sp)
+  20:	03010413          	addi	s0,sp,48
+  24:	fca42e23          	sw	a0,-36(s0)
+  28:	aaaaa7b7          	lui	a5,0xaaaaa
+  2c:	00878793          	addi	a5,a5,8 # aaaaa008 <_sp0+0xaaaa8f48>
+  30:	fef42623          	sw	a5,-20(s0)
+  34:	fec42783          	lw	a5,-20(s0)
+  38:	fdc42703          	lw	a4,-36(s0)
+  3c:	00e7a023          	sw	a4,0(a5)
+  40:	00000013          	nop
+  44:	02c12403          	lw	s0,44(sp)
+  48:	03010113          	addi	sp,sp,48
+  4c:	00008067          	ret
+
+00000050 <main>:
+  50:	fe010113          	addi	sp,sp,-32
+  54:	00112e23          	sw	ra,28(sp)
+  58:	00812c23          	sw	s0,24(sp)
+  5c:	02010413          	addi	s0,sp,32
+  60:	00200793          	li	a5,2
+  64:	fef42623          	sw	a5,-20(s0)
+  68:	fe042423          	sw	zero,-24(s0)
+  6c:	fec42703          	lw	a4,-20(s0)
+  70:	fe842783          	lw	a5,-24(s0)
+  74:	02f747b3          	div	a5,a4,a5
+  78:	00078863          	beqz	a5,88 <main+0x38>
+  7c:	00100513          	li	a0,1
+  80:	f99ff0ef          	jal	ra,18 <print>
+  84:	00c0006f          	j	90 <main+0x40>
+  88:	00000513          	li	a0,0
+  8c:	f8dff0ef          	jal	ra,18 <print>
+  90:	00000793          	li	a5,0
+  94:	00078513          	mv	a0,a5
+  98:	01c12083          	lw	ra,28(sp)
+  9c:	01812403          	lw	s0,24(sp)
+  a0:	02010113          	addi	sp,sp,32
+  a4:	00008067          	ret
