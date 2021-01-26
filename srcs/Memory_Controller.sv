@@ -12,8 +12,8 @@ logic [11:0] mem_addr_lower;
 logic [19:0] mem_addr_upper;
 logic [31:0] mem_din, mem_dout; 
 
-logic disp_wea;
-logic [31:0] disp_dat;
+//logic disp_wea;
+//logic [31:0] disp_dat;
 
 logic [31:0] imem_addr, imem_dout, imem_din; 
 logic imem_en, imem_state;
@@ -92,8 +92,8 @@ always_comb begin
     mbus.uart_din = mem_din[7:0];
     mbus.uart_addr = mem_addr_lower[2:0];
 //    mbus.uart_addr = uart_region ? mem_addr_lower[2:0] : 8'h00; 
-    mbus.disp_wea = (mmio_region & (mem_addr_lower == 12'h008)) ? mem_wea : 1'b0;
-    mbus.disp_dat = (mmio_region & (mem_addr_lower == 12'h008)) ? mem_din : 32'h0;
+//    mbus.disp_wea = (mmio_region & (mem_addr_lower == 12'h008)) ? mem_wea : 1'b0;
+//    mbus.disp_dat = (mmio_region & (mem_addr_lower == 12'h008)) ? mem_din : 32'h0;
 //    if (mmio_region) begin
 //        if (mem_addr_lower == 12'h400) begin
 //            mem_dout = mbus.uart_dout;

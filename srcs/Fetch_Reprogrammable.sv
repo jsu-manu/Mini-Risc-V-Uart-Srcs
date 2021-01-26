@@ -48,7 +48,7 @@ logic [31:0] ins_last;
 logic imem_en;
 logic [31:0] addr_in;
 logic En_sig, En_mem, state_load_prog;
-logic [31:0] debug_addr_imm;
+//logic [31:0] debug_addr_imm;
 //logic [11:0] branoff;
 logic comp_sig; 
 logic bg;
@@ -62,8 +62,8 @@ assign comp = (memdout[1:0] != 2'b11) & (memdout != 0);
 //assign next_comp = (lower & comp & (memdout[17:16] != 2'b11));
 assign comp_sig = comp;
 assign bus.comp_sig = comp_sig;
-assign debug_addr_imm[9:5] = 5'b00000;
-assign debug_addr_imm[4:0] = bus.debug_input;
+//assign debug_addr_imm[9:5] = 5'b00000;
+//assign debug_addr_imm[4:0] = bus.debug_input;
 
 //assign branoff[11] = bus.branoff[7];
 //assign branoff[10:7] = 4'b0000;
@@ -83,13 +83,14 @@ assign next_addr = bus.trap_ret ? bus.mepc : bus.trigger_trap ? bus.mtvec : bran
      
 assign En_sig=(bus.PC_En&&(!bus.debug)&&(!bus.dbg)&&(!bus.mem_hold)); 
 //assign En_sig=(bus.PC_En&&(!bus.dbg));
-assign En_mem=En_sig || bus.prog;
+assign En_mem=En_sig;// || bus.prog;
 assign bus.ins=bus.Rst?32'h00000000: comp_sig ? {16'h0000, memdout[15:0]} : memdout;
 
 //assign bus.ins=bus.Rst?32'h0: ((bus.IF_ID_pres_addr[1:0]) ?  {16'h0, memdout[31:16]} : memdout);
 //assign bus.ins=bus.Rst?32'h00000000:En_sig?memdout:32'h00000013;
 //assign addr_in=bus.prog?debug_addr_imm:pres_addr[11:2];
-assign addr_in=bus.prog?debug_addr_imm:imem_addr;
+//assign addr_in=bus.prog?debug_addr_imm:imem_addr;
+assign addr_in = imem_addr;
 assign imem_addr = next_addr;
 assign bus.imem_en = En_mem; 
 //assign imem_en = (~next_comp) & (~bus.Rst) & En_mem;

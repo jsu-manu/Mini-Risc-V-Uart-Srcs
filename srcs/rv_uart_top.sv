@@ -1,10 +1,7 @@
 `timescale 1ns / 1ps
 
 interface riscv_bus (
-    input logic clk, Rst, debug, prog, //rx, prog, 
-    input logic [4:0] debug_input,
-//    output logic [31:0] debug_output
-    input logic [95:0] key
+    input logic clk, Rst, debug//, prog, //rx, prog, 
     );
 
     logic mem_wea, mem_rea;
@@ -23,10 +20,10 @@ interface riscv_bus (
     logic trapping;
     
     modport core(
-        input clk, Rst, debug, prog, debug_input, mem_dout, imem_dout, //rx,
+        input clk, Rst, debug, mem_dout, imem_dout, //rx,
         output debug_output, mem_wea, mem_rea, mem_en, mem_addr, mem_din, imem_en, 
         output imem_addr, imem_din, imem_prog_ena, storecntrl,
-        input key, input mem_hold, uart_IRQ, 
+        input mem_hold, uart_IRQ, 
         output trapping
     );
     
@@ -43,14 +40,10 @@ endinterface
 
 interface mmio_bus (
         input logic clk, Rst, rx,// uart_clk,
-        input logic [4:0] debug_input, BR_clk,
+        input logic BR_clk,
         output logic tx
         //output logic[31:0] led
     );
-    logic [31:0] led;
-    logic disp_wea;
-    logic [31:0] disp_dat; 
-    logic [31:0] disp_out;
     
     //uart ports
     logic [7:0] uart_din, uart_dout; 
@@ -63,15 +56,9 @@ interface mmio_bus (
     
     modport memcon(
         input clk, Rst,
-        output disp_dat, disp_wea, led, 
         
         input uart_dout, rx_data_present , tx_full,
         output uart_din, rx_ren, tx_wen, uart_addr
-    );
-    
-    modport display(
-        input clk, Rst, disp_wea, disp_dat, debug_input, 
-        output disp_out
     );
     
     modport uart(
@@ -86,35 +73,28 @@ module rv_uart_top
   input  logic       Rst,
   input  logic       debug,
   input  logic       rx, //uart recv pin
-  input  logic       prog, //similar to debug, but shows mem addr, and allows reprogramming
+  //input  logic       prog, //similar to debug, but shows mem addr, and allows reprogramming
 //  input  logic       addr_dn,
 //  input  logic       addr_up,
-  input  logic [4:0] debug_input,
-  output logic tx, clk_out,
-  output logic [6:0] sev_out,
-  output logic [7:0] an,
-  output logic [15:0] led
+  //input  logic [4:0] debug_input,
+  output logic tx, clk_out//,
+  //output logic [6:0] sev_out,
+  //output logic [7:0] an,
+  //output logic [15:0] led
 //  input logic [95:0] key
   );
 
-  logic [31:0] debug_output;
-  logic [3:0]  seg_cur, seg_nxt;
-  logic        clk_50M, clk_5M,clk_7seg;// clk_disp;
-  logic addr_dn, addr_up;
+  //logic [31:0] debug_output;
+  //logic [3:0]  seg_cur, seg_nxt;
+  //logic        clk_50M, clk_5M,clk_7seg;// clk_disp;
+  //logic addr_dn, addr_up;
   //clock divider variable
 //  integer      count;
-  logic [95:0] key; 
-  
-  
-assign key[95:48]=48'h3cf3cf3cf3cf;
-assign key[47:24]=24'h30c30c;
-assign key[23:12]=12'hbae;
-assign key[11:0]=12'h3cf;
 //  assign key[95:48]=48'haaaaaaaaaaaa;
 //assign key[47:24]=24'h000000;
 //assign key[23:12]=12'h000;
 //assign key[11:0] = 12'h000;
-  logic rst_in, rst_last;
+  //logic rst_in, rst_last;
   
 //  logic mem_wea;
 //  logic [3:0] mem_en;
@@ -122,13 +102,13 @@ assign key[11:0]=12'h3cf;
 //  logic [31:0] mem_din, mem_dout;
 //`ifndef SYNTHESIS
 
-clk_wiz_0 c0(.*);
+//clk_wiz_0 c0(.*);
 //initial begin
 //	clk_50M = 0;
 //end
-  riscv_bus rbus(.clk(clk_50M), .*);
-  mmio_bus mbus(.clk(clk_50M), .BR_clk(clk), .*);
-clk_div cdiv(clk,Rst,16'd500,clk_7seg);  
+  riscv_bus rbus(.clk(clk), .*);
+  mmio_bus mbus(.clk(clk), .BR_clk(clk), .*);
+//clk_div cdiv(clk,Rst,16'd500,clk_7seg);  
 //`else
 // riscv_bus rbus(.*);
 // mmio_bus mbus(.*);
@@ -141,17 +121,7 @@ clk_div cdiv(clk,Rst,16'd500,clk_7seg);
   //mmio_bus mbus(.clk(clk_50M),  .*);
 
 //`endif
-  
-  assign led = {14'h0, rbus.trapping, rbus.uart_IRQ};
-  
-  assign debug_output = (prog | debug ) ? rbus.debug_output : mbus.disp_out;
-  
 
-  enum logic [7:0] {a0=8'b11111110, a1=8'b11111101,
-                    a2=8'b11111011, a3=8'b11110111,
-                    a4=8'b11101111, a5=8'b11011111,
-                    a6=8'b10111111, a7=8'b01111111} 
-                    an_cur, an_nxt;
 
   //RISCVcore rv_core(.clk(clk), .*);
 //  RISCVcore_uart rv_core(.*);
@@ -159,7 +129,7 @@ clk_div cdiv(clk,Rst,16'd500,clk_7seg);
     RISCVcore_uart rv_core(rbus.core);    
     Memory_Controller memcon0(rbus.memcon, mbus.memcon);
     
-    Debug_Display d0(mbus.display);
+    //Debug_Display d0(mbus.display);
     
     uart_controller u0(mbus.uart, rbus.uart);
     
@@ -188,11 +158,10 @@ clk_div cdiv(clk,Rst,16'd500,clk_7seg);
   //clk_wiz_0 clk_div0(clk_50M, clk);
   //clk_wiz_1 clk_div1(clk_5M, clk_50M);
 
-  assign an = an_cur;
 //  assign led = debug_output[15:0];
-  assign clk_out = clk_50M;
+  //assign clk_out = clk_50M;
   
-  always_ff @(posedge clk_7seg) begin
+  /*always_ff @(posedge clk_7seg) begin
     if (Rst) begin
       an_cur <= a0;
       seg_cur <= debug_output[3:0];
@@ -265,7 +234,7 @@ clk_div cdiv(clk,Rst,16'd500,clk_7seg);
       default: sev_out = 7'b0000000;
     endcase
   end
-  
+  */
 //  integer cnt = 0;
 //    integer maxcnt = 100000000;
 //    always_ff @(posedge clk) begin

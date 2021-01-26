@@ -25,9 +25,9 @@
 
 //Interface bus between all pipeline stages
 interface main_bus (
-    input logic clk, Rst, debug, dbg, prog, mem_hold, uart_IRQ, //rx, //addr_dn, addr_up,
-    input logic[4:0] debug_input, 
-    input logic [95:0] key
+    input logic clk, Rst, debug, dbg, mem_hold, uart_IRQ//, //rx, //addr_dn, addr_up,
+//    input logic[4:0] debug_input, 
+//    input logic [95:0] key
 //    output logic tx
     );
     
@@ -159,12 +159,12 @@ interface main_bus (
     
     //modport for fetch stage
     modport fetch(
-        input clk, PC_En, debug, prog, Rst, branch, IF_ID_jalr, IF_ID_jal,
+        input clk, PC_En, debug, Rst, branch, IF_ID_jalr, IF_ID_jal,
         input dbg, mem_hold,
         input trap, mtvec, mepc, trigger_trap,  trap_ret, trigger_trap_ret,
         //input rx,
         input uart_dout, memcon_prog_ena, 
-        input debug_input, branoff,
+        input branoff,
         output IF_ID_pres_addr, ins, 
         input imem_dout,
         output imem_en, imem_addr, comp_sig
@@ -211,7 +211,6 @@ interface main_bus (
         input MEM_WB_rd, WB_ID_rd,
         output EX_MEM_memwrite, EX_MEM_regwrite, EX_MEM_comp_res, 
         output EX_MEM_pres_addr,
-        input key, 
         input ID_EX_CSR_addr, ID_EX_CSR, ID_EX_CSR_write, csrsel, ID_EX_CSR_read,
         output EX_CSR_res, EX_CSR_addr, EX_CSR_write, EX_MEM_CSR, EX_MEM_CSR_read,
         input ID_EX_comp_sig
@@ -288,9 +287,9 @@ module RISCVcore_uart(
     );
     //logic addr_dn = 0, addr_up = 0;
     
-    logic clk, Rst, debug, prog, mem_wea, dbg; //rx,
-    logic [4:0] debug_input;
-    logic [31:0] debug_output, mem_addr, mem_din, mem_dout; 
+    logic clk, Rst, debug,  mem_wea, dbg; //rx,
+//    logic [4:0] debug_input;
+    logic [31:0]  mem_addr, mem_din, mem_dout; 
     logic [3:0] mem_en; 
     
     logic trap;
@@ -302,9 +301,9 @@ module RISCVcore_uart(
         Rst = rbus.Rst; 
         debug = rbus.debug; 
         //rx = rbus.rx; 
-        prog = rbus.prog; 
-        debug_input = rbus.debug_input; 
-        rbus.debug_output = (rbus.debug_input == 0) ? bus.IF_ID_pres_addr : debug_output; 
+//        prog = rbus.prog; 
+//        debug_input = rbus.debug_input; 
+//        rbus.debug_output = (rbus.debug_input == 0) ? bus.IF_ID_pres_addr : debug_output; 
 //		rbus.debug_output = bus.IF_ID_pres_addr;//bus.mtvec;
         rbus.mem_wea = mem_wea; 
         rbus.mem_rea = bus.mem_rea;
@@ -320,7 +319,7 @@ module RISCVcore_uart(
     end
     
     
-    main_bus bus(.key(rbus.key), .mem_hold(rbus.mem_hold), .uart_IRQ(rbus.uart_IRQ), .*);
+    main_bus bus(.mem_hold(rbus.mem_hold), .uart_IRQ(rbus.uart_IRQ), .*);
     
      assign rbus.storecntrl = bus.EX_MEM_storecntrl;
      assign rbus.trapping = bus.trapping;
@@ -335,10 +334,10 @@ module RISCVcore_uart(
     
 //    assign bus.PC_En=!bus.hz;
     assign bus.PC_En=(!bus.hz);
-    assign dbg=(debug || prog); //added to stop pipeline on prog and/or debug
+    assign dbg=(debug); //added to stop pipeline on prog and/or debug
     //debugging resister
-    assign bus.adr_rs1=debug ? debug_input:bus.IF_ID_rs1;
-    
+//    assign bus.adr_rs1=debug ? debug_input:bus.IF_ID_rs1;
+	assign bus.adr_rs1 = bus.IF_ID_rs1;    
 //    assign bus.trap = trap;
     
 //    always_comb begin : stackstuff
@@ -348,7 +347,7 @@ module RISCVcore_uart(
 //        bus.stack_din = bus.push ? (bus.IF_ID_pres_addr + 4) : bus.pop ? (bus.branoff) : 32'h0; 
 //    end
     
-    always_ff @(posedge clk) begin
+    /*always_ff @(posedge clk) begin
         if(Rst) begin
             debug_output<=32'h00000000;
 //            trap <= 0;
@@ -364,7 +363,7 @@ module RISCVcore_uart(
 //            debug_output<=bus.mmio_dat;
             debug_output<=32'h00000000;
         end
-    end
+    end*/
 
     Fetch_Reprogrammable u1(bus.fetch);
     

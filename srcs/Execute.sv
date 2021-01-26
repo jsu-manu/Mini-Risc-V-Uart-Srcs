@@ -108,7 +108,7 @@ module Execute(main_bus bus);
         .ID_EX_jal(bus.ID_EX_jal),
         .ID_EX_jalr(bus.ID_EX_jalr),
         .ID_EX_auipc(bus.ID_EX_auipc),
-        .key(bus.key),
+        //.key(bus.key),
         .res(alures),
         .comp_res(comp_res), 
         .CSR_res(CSR_res),
