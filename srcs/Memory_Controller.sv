@@ -20,6 +20,9 @@ logic imem_en, imem_state;
 
 
 logic mmio_region, kernel_region, prog_region, uart_region;
+logic spi_region; 
+logic spi_last_cond;
+logic [7:0] spi_last;
 logic [31:0] blkmem_dout, doutb, blkmem_din; 
 logic [7:0] uart_dout;
 logic uart_last_cond;
@@ -69,6 +72,8 @@ always_comb begin : mem_region
     prog_region = (rbus.mem_addr[31:16] == 16'h0001); 
     uart_region = (mem_addr_upper == 20'haaaaa) & (mem_addr_lower >= 12'h400) & 
         (mem_addr_lower < 12'h408); 
+    spi_region = (mem_addr_upper == 20'haaaaa) & (mem_addr_lower >= 12'h500) & 
+    	(mem_addr_lower < 12'h502);
 end
 
 //always_comb begin
@@ -94,6 +99,12 @@ always_comb begin
 //    mbus.uart_addr = uart_region ? mem_addr_lower[2:0] : 8'h00; 
     mbus.disp_wea = (mmio_region & (mem_addr_lower == 12'h008)) ? mem_wea : 1'b0;
     mbus.disp_dat = (mmio_region & (mem_addr_lower == 12'h008)) ? mem_din : 32'h0;
+    
+    mbus.spi_rd = spi_region ? mem_rea : 1'b0; 
+    mbus.spi_wr = spi_region ? mem_wea : 1'b0; 
+    mbus.spi_din = spi_region ? mem_din[7:0] : 8'h00;
+    mbus.spi_ignore_response = spi_region ? mem_din[8] : 1'b0;  
+    
 //    if (mmio_region) begin
 //        if (mem_addr_lower == 12'h400) begin
 //            mem_dout = mbus.uart_dout;
@@ -107,7 +118,7 @@ always_comb begin
 //    end
 //    uart_dout = (mmio_region & (mem_addr_lower == 12'h404)) ? {6'b000000, mbus.tx_full, mbus.rx_data_present} : mbus.uart_dout;
 //    mem_dout = uart_last_cond ? uart_dout : blkmem_dout;
-    mem_dout = uart_last_cond ? uart_last_out : blkmem_dout;
+    mem_dout = uart_last_cond ? uart_last_out : (spi_last_cond ? {24'h0, spi_last} : blkmem_dout);
 end
 
 always_ff @(posedge clk) begin
@@ -142,6 +153,15 @@ always_ff @(posedge clk) begin
         end else begin
             uart_last_cond <= 0; 
         end
+        
+        if (spi_region && (mem_wea | mem_rea)) begin
+        	spi_last_cond <= 1; 
+        	if (mem_addr_lower == 12'h500) 
+        		spi_last = mbus.spi_dout; 
+        	else
+        		spi_last = {5'b0, mbus.spi_buffer_full, mbus.spi_buffer_empty, mbus.spi_data_avail};
+        end else spi_last_cond <= 0;
+        
         mem_en_last <= mem_en;
         
 //        if (mem_hold == 1) begin

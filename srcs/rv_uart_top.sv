@@ -44,7 +44,9 @@ endinterface
 interface mmio_bus (
         input logic clk, Rst, rx,// uart_clk,
         input logic [4:0] debug_input, BR_clk,
-        output logic tx
+        output logic tx, 
+        input logic spi_miso, 
+        output logic spi_mosi, spi_cs, spi_sck
         //output logic[31:0] led
     );
     logic [31:0] led;
@@ -59,6 +61,12 @@ interface mmio_bus (
     logic [2:0] uart_addr;
 //    logic BR_clk;
     
+    //SPI interface
+    logic spi_rd, spi_wr;
+    logic [7:0] spi_din;
+    logic spi_ignore_response; 
+    logic spi_data_avail, spi_buffer_empty, spi_buffer_full;
+    logic [7:0] spi_dout;  
     
     
     modport memcon(
@@ -66,7 +74,10 @@ interface mmio_bus (
         output disp_dat, disp_wea, led, 
         
         input uart_dout, rx_data_present , tx_full,
-        output uart_din, rx_ren, tx_wen, uart_addr
+        output uart_din, rx_ren, tx_wen, uart_addr, 
+        
+        input spi_data_avail, spi_buffer_empty, spi_buffer_full, spi_dout, 
+        output spi_rd, spi_wr, spi_din, spi_ignore_response
     );
     
     modport display(
@@ -77,6 +88,11 @@ interface mmio_bus (
     modport uart(
         input clk, Rst, rx, rx_ren, tx_wen, uart_din, uart_addr, BR_clk, //uart_clk,
         output rx_data_present, tx, uart_dout, tx_full
+    );
+    
+    modport spi(
+    	input clk, Rst, spi_rd, spi_wr, spi_din, spi_ignore_response, spi_miso, 
+    	output spi_data_avail, spi_buffer_empty, spi_buffer_full, spi_dout, spi_mosi, spi_cs, spi_sck
     );
     
 endinterface
@@ -93,8 +109,12 @@ module rv_uart_top
   output logic tx, clk_out,
   output logic [6:0] sev_out,
   output logic [7:0] an,
-  output logic [15:0] led
+  output logic [15:0] led,
 //  input logic [95:0] key
+
+	//SPI STUFF
+	input logic miso, 
+	output logic mosi, cs
   );
 
   logic [31:0] debug_output;
@@ -116,6 +136,8 @@ assign key[11:0]=12'h3cf;
 //assign key[11:0] = 12'h000;
   logic rst_in, rst_last;
   
+  logic spi_mosi, spi_miso, spi_cs, spi_sck;
+  assign spi_miso = spi_mosi;
 //  logic mem_wea;
 //  logic [3:0] mem_en;
 //  logic [11:0] mem_addr;
@@ -162,6 +184,8 @@ clk_div cdiv(clk,Rst,16'd500,clk_7seg);
     Debug_Display d0(mbus.display);
     
     uart_controller u0(mbus.uart, rbus.uart);
+    
+    spi_controller spi0(mbus.spi);
     
 //    Memory_byteaddress mem0(.clk(clk_50M), .rst(Rst), .wea(mem_wea), .en(mem_en), .addr(mem_addr),
 //        .din(mem_din), .dout(mem_dout));
