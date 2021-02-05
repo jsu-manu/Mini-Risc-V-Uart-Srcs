@@ -19,116 +19,115 @@ Disassembly of section .text:
   18:	ce06                	sw	ra,28(sp)
   1a:	cc22                	sw	s0,24(sp)
   1c:	1000                	addi	s0,sp,32
-  1e:	09000513          	li	a0,144
-  22:	2835                	jal	5e <spi_write_ignore_response>
-  24:	4501                	li	a0,0
-  26:	2825                	jal	5e <spi_write_ignore_response>
-  28:	4501                	li	a0,0
-  2a:	2815                	jal	5e <spi_write_ignore_response>
-  2c:	4501                	li	a0,0
-  2e:	2805                	jal	5e <spi_write_ignore_response>
-  30:	4501                	li	a0,0
-  32:	28a9                	jal	8c <spi_write>
-  34:	4501                	li	a0,0
-  36:	2899                	jal	8c <spi_write>
-  38:	0001                	nop
-  3a:	205d                	jal	e0 <spi_poll>
-  3c:	87aa                	mv	a5,a0
-  3e:	8b85                	andi	a5,a5,1
-  40:	dfed                	beqz	a5,3a <main+0x24>
-  42:	28a5                	jal	ba <spi_read>
-  44:	87aa                	mv	a5,a0
-  46:	fef407a3          	sb	a5,-17(s0)
-  4a:	fef44783          	lbu	a5,-17(s0)
-  4e:	853e                	mv	a0,a5
-  50:	2865                	jal	108 <print>
-  52:	4781                	li	a5,0
-  54:	853e                	mv	a0,a5
-  56:	40f2                	lw	ra,28(sp)
-  58:	4462                	lw	s0,24(sp)
-  5a:	6105                	addi	sp,sp,32
-  5c:	8082                	ret
+  1e:	4515                	li	a0,5
+  20:	2081                	jal	60 <spi_write_ignore_response>
+  22:	4501                	li	a0,0
+  24:	20ad                	jal	8e <spi_write>
+  26:	4501                	li	a0,0
+  28:	209d                	jal	8e <spi_write>
+  2a:	0001                	nop
+  2c:	285d                	jal	e2 <spi_poll>
+  2e:	87aa                	mv	a5,a0
+  30:	8b85                	andi	a5,a5,1
+  32:	dfed                	beqz	a5,2c <main+0x16>
+  34:	2061                	jal	bc <spi_read>
+  36:	87aa                	mv	a5,a0
+  38:	fef407a3          	sb	a5,-17(s0)
+  3c:	fef44783          	lbu	a5,-17(s0)
+  40:	853e                	mv	a0,a5
+  42:	20e1                	jal	10a <print>
+  44:	0001                	nop
+  46:	2871                	jal	e2 <spi_poll>
+  48:	87aa                	mv	a5,a0
+  4a:	8b85                	andi	a5,a5,1
+  4c:	dfed                	beqz	a5,46 <main+0x30>
+  4e:	20bd                	jal	bc <spi_read>
+  50:	87aa                	mv	a5,a0
+  52:	fef407a3          	sb	a5,-17(s0)
+  56:	fef44783          	lbu	a5,-17(s0)
+  5a:	853e                	mv	a0,a5
+  5c:	207d                	jal	10a <print>
+  5e:	a001                	j	5e <main+0x48>
 
-0000005e <spi_write_ignore_response>:
-  5e:	7179                	addi	sp,sp,-48
-  60:	d622                	sw	s0,44(sp)
-  62:	1800                	addi	s0,sp,48
-  64:	87aa                	mv	a5,a0
-  66:	fcf40fa3          	sb	a5,-33(s0)
-  6a:	aaaaa7b7          	lui	a5,0xaaaaa
-  6e:	50078793          	addi	a5,a5,1280 # aaaaa500 <_sp0+0xaaaa93c0>
-  72:	fef42623          	sw	a5,-20(s0)
-  76:	fdf44783          	lbu	a5,-33(s0)
-  7a:	2007f713          	andi	a4,a5,512
-  7e:	fec42783          	lw	a5,-20(s0)
-  82:	c398                	sw	a4,0(a5)
-  84:	0001                	nop
-  86:	5432                	lw	s0,44(sp)
-  88:	6145                	addi	sp,sp,48
-  8a:	8082                	ret
+00000060 <spi_write_ignore_response>:
+  60:	7179                	addi	sp,sp,-48
+  62:	d622                	sw	s0,44(sp)
+  64:	1800                	addi	s0,sp,48
+  66:	87aa                	mv	a5,a0
+  68:	fcf40fa3          	sb	a5,-33(s0)
+  6c:	aaaaa7b7          	lui	a5,0xaaaaa
+  70:	50078793          	addi	a5,a5,1280 # aaaaa500 <_sp0+0xaaaa93c0>
+  74:	fef42623          	sw	a5,-20(s0)
+  78:	fdf44783          	lbu	a5,-33(s0)
+  7c:	1007e713          	ori	a4,a5,256
+  80:	fec42783          	lw	a5,-20(s0)
+  84:	c398                	sw	a4,0(a5)
+  86:	0001                	nop
+  88:	5432                	lw	s0,44(sp)
+  8a:	6145                	addi	sp,sp,48
+  8c:	8082                	ret
 
-0000008c <spi_write>:
-  8c:	7179                	addi	sp,sp,-48
-  8e:	d622                	sw	s0,44(sp)
-  90:	1800                	addi	s0,sp,48
-  92:	87aa                	mv	a5,a0
-  94:	fcf40fa3          	sb	a5,-33(s0)
-  98:	aaaaa7b7          	lui	a5,0xaaaaa
-  9c:	50078793          	addi	a5,a5,1280 # aaaaa500 <_sp0+0xaaaa93c0>
-  a0:	fef42623          	sw	a5,-20(s0)
-  a4:	fec42783          	lw	a5,-20(s0)
-  a8:	fdf44703          	lbu	a4,-33(s0)
-  ac:	00e78023          	sb	a4,0(a5)
-  b0:	0001                	nop
-  b2:	853e                	mv	a0,a5
-  b4:	5432                	lw	s0,44(sp)
-  b6:	6145                	addi	sp,sp,48
-  b8:	8082                	ret
+0000008e <spi_write>:
+  8e:	7179                	addi	sp,sp,-48
+  90:	d622                	sw	s0,44(sp)
+  92:	1800                	addi	s0,sp,48
+  94:	87aa                	mv	a5,a0
+  96:	fcf40fa3          	sb	a5,-33(s0)
+  9a:	aaaaa7b7          	lui	a5,0xaaaaa
+  9e:	50078793          	addi	a5,a5,1280 # aaaaa500 <_sp0+0xaaaa93c0>
+  a2:	fef42623          	sw	a5,-20(s0)
+  a6:	fec42783          	lw	a5,-20(s0)
+  aa:	fdf44703          	lbu	a4,-33(s0)
+  ae:	00e78023          	sb	a4,0(a5)
+  b2:	0001                	nop
+  b4:	853e                	mv	a0,a5
+  b6:	5432                	lw	s0,44(sp)
+  b8:	6145                	addi	sp,sp,48
+  ba:	8082                	ret
 
-000000ba <spi_read>:
-  ba:	1101                	addi	sp,sp,-32
-  bc:	ce22                	sw	s0,28(sp)
-  be:	1000                	addi	s0,sp,32
-  c0:	aaaaa7b7          	lui	a5,0xaaaaa
-  c4:	50078793          	addi	a5,a5,1280 # aaaaa500 <_sp0+0xaaaa93c0>
-  c8:	fef42623          	sw	a5,-20(s0)
-  cc:	fec42783          	lw	a5,-20(s0)
-  d0:	0007c783          	lbu	a5,0(a5)
-  d4:	0ff7f793          	andi	a5,a5,255
-  d8:	853e                	mv	a0,a5
-  da:	4472                	lw	s0,28(sp)
-  dc:	6105                	addi	sp,sp,32
-  de:	8082                	ret
+000000bc <spi_read>:
+  bc:	1101                	addi	sp,sp,-32
+  be:	ce22                	sw	s0,28(sp)
+  c0:	1000                	addi	s0,sp,32
+  c2:	aaaaa7b7          	lui	a5,0xaaaaa
+  c6:	50078793          	addi	a5,a5,1280 # aaaaa500 <_sp0+0xaaaa93c0>
+  ca:	fef42623          	sw	a5,-20(s0)
+  ce:	fec42783          	lw	a5,-20(s0)
+  d2:	0007c783          	lbu	a5,0(a5)
+  d6:	0ff7f793          	andi	a5,a5,255
+  da:	853e                	mv	a0,a5
+  dc:	4472                	lw	s0,28(sp)
+  de:	6105                	addi	sp,sp,32
+  e0:	8082                	ret
 
-000000e0 <spi_poll>:
-  e0:	1101                	addi	sp,sp,-32
-  e2:	ce22                	sw	s0,28(sp)
-  e4:	1000                	addi	s0,sp,32
-  e6:	aaaaa7b7          	lui	a5,0xaaaaa
-  ea:	50078793          	addi	a5,a5,1280 # aaaaa500 <_sp0+0xaaaa93c0>
-  ee:	fef42623          	sw	a5,-20(s0)
-  f2:	fec42783          	lw	a5,-20(s0)
-  f6:	0785                	addi	a5,a5,1
-  f8:	0007c783          	lbu	a5,0(a5)
-  fc:	0ff7f793          	andi	a5,a5,255
- 100:	853e                	mv	a0,a5
- 102:	4472                	lw	s0,28(sp)
- 104:	6105                	addi	sp,sp,32
- 106:	8082                	ret
+000000e2 <spi_poll>:
+  e2:	1101                	addi	sp,sp,-32
+  e4:	ce22                	sw	s0,28(sp)
+  e6:	1000                	addi	s0,sp,32
+  e8:	aaaaa7b7          	lui	a5,0xaaaaa
+  ec:	50078793          	addi	a5,a5,1280 # aaaaa500 <_sp0+0xaaaa93c0>
+  f0:	fef42623          	sw	a5,-20(s0)
+  f4:	fec42783          	lw	a5,-20(s0)
+  f8:	0785                	addi	a5,a5,1
+  fa:	0007c783          	lbu	a5,0(a5)
+  fe:	0ff7f793          	andi	a5,a5,255
+ 102:	853e                	mv	a0,a5
+ 104:	4472                	lw	s0,28(sp)
+ 106:	6105                	addi	sp,sp,32
+ 108:	8082                	ret
 
-00000108 <print>:
- 108:	7179                	addi	sp,sp,-48
- 10a:	d622                	sw	s0,44(sp)
- 10c:	1800                	addi	s0,sp,48
- 10e:	fca42e23          	sw	a0,-36(s0)
- 112:	fe042623          	sw	zero,-20(s0)
- 116:	fdc42783          	lw	a5,-36(s0)
- 11a:	fec42703          	lw	a4,-20(s0)
- 11e:	4701                	li	a4,0
- 120:	aaaaa737          	lui	a4,0xaaaaa
- 124:	c71c                	sw	a5,8(a4)
- 126:	0001                	nop
- 128:	5432                	lw	s0,44(sp)
- 12a:	6145                	addi	sp,sp,48
- 12c:	8082                	ret
-	...
+0000010a <print>:
+ 10a:	7179                	addi	sp,sp,-48
+ 10c:	d622                	sw	s0,44(sp)
+ 10e:	1800                	addi	s0,sp,48
+ 110:	fca42e23          	sw	a0,-36(s0)
+ 114:	fe042623          	sw	zero,-20(s0)
+ 118:	fdc42783          	lw	a5,-36(s0)
+ 11c:	fec42703          	lw	a4,-20(s0)
+ 120:	4701                	li	a4,0
+ 122:	aaaaa737          	lui	a4,0xaaaaa
+ 126:	c71c                	sw	a5,8(a4)
+ 128:	0001                	nop
+ 12a:	5432                	lw	s0,44(sp)
+ 12c:	6145                	addi	sp,sp,48
+ 12e:	8082                	ret

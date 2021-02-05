@@ -30,6 +30,8 @@ logic [6:0] sev_out;
 logic [7:0] an;
 logic [15:0] led; 
 logic [95:0] key;
+logic miso, mosi, cs; 
+logic sck;
 
 assign key[95:48]=48'h3cf3cf3cf3cf;
 assign key[47:24]=24'h30c30c;
@@ -40,6 +42,10 @@ assign key[11:0]=12'h3cf;
 //assign key[23:12]=12'h000;
 //assign key[11:0] = 12'h000;
 rv_uart_top dut(.*); 
+
+assign sck = dut.spi_sck;
+
+assign miso = mosi;
 
 always #5 clk=!clk; 
 

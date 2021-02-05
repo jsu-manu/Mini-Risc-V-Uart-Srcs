@@ -136,12 +136,23 @@ assign key[11:0]=12'h3cf;
 //assign key[11:0] = 12'h000;
   logic rst_in, rst_last;
   
+  
   logic spi_mosi, spi_miso, spi_cs, spi_sck;
-  assign spi_miso = spi_mosi;
+//  assign spi_miso = spi_mosi;
+	assign spi_miso = miso;
+	assign mosi = spi_mosi; 
+	assign cs = spi_cs; 
+//	assign cs = 1;
+//	assign mosi = 1;
+	
+	
+STARTUPE2 startup_i(.CFGCLK(), .CFGMCLK(), .EOS(), .PREQ(), .CLK(0), .GSR(0), .GTS(0), .KEYCLEARB(0), .PACK(0), .USRCCLKO(spi_sck), .USRCCLKTS(0), .USRDONEO(0), .USRDONETS(0));
 //  logic mem_wea;
 //  logic [3:0] mem_en;
 //  logic [11:0] mem_addr;
 //  logic [31:0] mem_din, mem_dout;
+
+
 //`ifndef SYNTHESIS
 
 clk_wiz_0 c0(.*);

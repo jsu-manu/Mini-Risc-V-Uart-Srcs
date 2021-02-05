@@ -2,7 +2,7 @@
 
 void spi_write_ignore_response(char c) {
 	volatile int * ptr = (int *)SPI_BASE_ADDR; 
-	*(ptr) = (1 << 9) & c; 
+	*(ptr) = (1 << 8) | c; 
 }
 char spi_write(char c) {
 	volatile char * ptr = (char *)SPI_BASE_ADDR;
