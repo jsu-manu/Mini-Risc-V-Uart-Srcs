@@ -149,7 +149,7 @@ interface main_bus
   modport decode
   (
     input  clk, Rst, dbg, ins, IF_ID_pres_addr, MEM_WB_rd, WB_res, mem_hold,
-    input  EX_MEM_memread, EX_MEM_regwrite, MEM_WB_regwrite, EX_MEM_alures,
+    input  EX_MEM_memread, EX_MEM_regwrite, MEM_WB_regwrite, EX_MEM_alures, EX_MEM_divres,
     input  EX_MEM_rd, IF_ID_dout_rs1, IF_ID_dout_rs2, 
     input  IF_ID_CSR, trap,
     input  mul_ready, div_ready,

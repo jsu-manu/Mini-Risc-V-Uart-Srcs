@@ -101,6 +101,8 @@ module Decode(main_bus bus);
   logic [31:0] imm;
   logic        hz_sig;
   logic        branch_taken_sig;
+  logic        div_ready_sig;
+  logic        div_ready;
 
   logic        mul_inst;
   logic        div_inst;
@@ -169,9 +171,11 @@ module Decode(main_bus bus);
     .imm(imm),
     .alures(bus.EX_MEM_alures),
     .wbres(bus.WB_res),
+    .divres(bus.EX_MEM_divres),
     .EX_MEM_regwrite(bus.EX_MEM_regwrite),
     .EX_MEM_memread(bus.EX_MEM_memread),
     .MEM_WB_regwrite(bus.MEM_WB_regwrite),
+    .div_ready(div_ready_sig),
     .rs1_mod(rs1_mod),
     .rs2_mod(rs2_mod)
   );
@@ -269,6 +273,7 @@ module Decode(main_bus bus);
       bus.ID_EX_CSR_write  <= 1'b0;
       bus.csrsel           <= 3'b000;
       bus.ID_EX_CSR_read   <= 0;
+      div_ready_sig        <= 0;
     end
     else if(!bus.dbg && !bus.mem_hold)
     begin
@@ -302,6 +307,7 @@ module Decode(main_bus bus);
         bus.ID_EX_CSR_write  <= csrwrite;
         bus.csrsel           <= csrsel;
         bus.ID_EX_CSR_read   <= csrread;
+        div_ready_sig        <= bus.div_ready;
       end
       else
       begin
@@ -331,6 +337,7 @@ module Decode(main_bus bus);
         bus.ID_EX_CSR_write  <= 1'b0;
         bus.csrsel           <= 3'b000;
         bus.ID_EX_CSR_read   <= 0;
+        div_ready_sig        <= div_ready;
       end
     end
   end
@@ -340,4 +347,5 @@ module Decode(main_bus bus);
   assign flush              = flush_sig;
   assign bus.IF_ID_jalr     = IF_ID_jalr_sig;
   assign bus.IF_ID_jal      = IF_ID_jal;
+  assign div_ready          = div_ready_sig;
 endmodule
