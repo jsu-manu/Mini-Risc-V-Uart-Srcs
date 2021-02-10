@@ -78,9 +78,34 @@ always #5 clk=!clk;
 //	$display("Hit Rate: %f", hit_rate); 
 //end
 
+realtime t0, t1; 
+realtime en_tot, tot;
+logic begin_second = 0; 
+logic get_second;
+
+always_ff @(posedge dut.clk_50M) begin
+	if ((dut.rbus.IF_ID_pres_addr == 32'h14) & (dut.rbus.branch)) begin
+		if (~get_second) begin
+			t1 = $time; 
+			en_tot = t1 - t0;
+			$display("Exec time when enabled: %d", en_tot);
+			begin_second <= 1;
+		end else begin
+			t1 = $time; 
+			tot = t1 - t0; 
+			$display("Exec time when enabled: %d", en_tot);
+			$display("Exec time when disabled: %d", tot);
+			$stop;
+		end
+//		$display("Total Exec Time: %d", ); 
+//		$stop;
+	end 
+end
+
 initial begin
     $display("Begin simulaton");
 //    readfile("/home/gray/Projects/Mini-Risc-V-Uart-Srcs/gcc/test1.hex");
+	get_second = 0;
     clk = 0;
     Rst = 1; 
     debug = 0;
@@ -89,6 +114,21 @@ initial begin
     debug_input = 0; 
     #10;
     Rst=0;
+    
+    @(posedge dut.clk_50M); 
+    t0 = $time;
+    $display("T0 = %d", t0);
+    
+    @(posedge begin_second);
+    Rst = 1;
+    
+    @(posedge dut.clk_50M); 
+    @(posedge dut.clk_50M);
+    Rst = 0; 
+    dut.CRAS.RAS_ena = 0;
+    get_second = 1;
+    t0 = $time; 
+    
     
 //    #1000
 //    dut.rv_core.trap = 1;
@@ -109,28 +149,28 @@ initial begin
 //    rxchar(8'had);
 //    rxchar(8'hde);
 
+	
 
-
-    #9000;
-    rx = 0; //start bit
-    #9000;
-    rx = 1; //d0
-    #9000;
-    rx = 0; //d1
-    #9000;
-    rx = 1; //d2
-    #9000;
-    rx = 0; //d3
-    #9000;
-    rx = 1; //d4
-    #9000;
-    rx = 0; //d5
-    #9000;
-    rx = 1; //d6
-    #9000;
-    rx = 0; //d7
-    #9000;
-    rx = 1; //stop bit
+//    #9000;
+//    rx = 0; //start bit
+//    #9000;
+//    rx = 1; //d0
+//    #9000;
+//    rx = 0; //d1
+//    #9000;
+//    rx = 1; //d2
+//    #9000;
+//    rx = 0; //d3
+//    #9000;
+//    rx = 1; //d4
+//    #9000;
+//    rx = 0; //d5
+//    #9000;
+//    rx = 1; //d6
+//    #9000;
+//    rx = 0; //d7
+//    #9000;
+//    rx = 1; //stop bit
     
 //    #1500
     

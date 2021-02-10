@@ -121,6 +121,7 @@ interface main_bus (
     
     logic trapping, trigger_trap, trap_ret, trigger_trap_ret; 
     
+    logic [31:0] next_addr;
 //    assign rbus.trapping = trapping;
     
 //    assign trigger_trap = (~trapping) & trap;
@@ -167,7 +168,7 @@ interface main_bus (
         input debug_input, branoff,
         output IF_ID_pres_addr, ins, 
         input imem_dout,
-        output imem_en, imem_addr, comp_sig
+        output imem_en, imem_addr, comp_sig, next_addr
     );
     
     //modport for register file
@@ -317,6 +318,15 @@ module RISCVcore_uart(
         bus.imem_dout = rbus.imem_dout;
         rbus.imem_din = bus.uart_dout;
         rbus.imem_prog_ena = bus.memcon_prog_ena;
+        
+        rbus.branch = bus.branch; //bus.IF_ID_jal & (bus.IF_ID_rd == 1);
+        rbus.IF_ID_jal = bus.IF_ID_jal;
+        rbus.IF_ID_rd = bus.IF_ID_rd; 
+        rbus.ins = bus.ins; 
+        rbus.IF_ID_pres_addr = bus.IF_ID_pres_addr; 
+        rbus.IF_ID_dout_rs1 = bus.IF_ID_dout_rs1;
+        rbus.branoff = bus.branoff;
+        rbus.next_addr = bus.next_addr;
     end
     
     
@@ -334,7 +344,7 @@ module RISCVcore_uart(
     
     
 //    assign bus.PC_En=!bus.hz;
-    assign bus.PC_En=(!bus.hz);
+    assign bus.PC_En=(!bus.hz) & (rbus.RAS_rdy);//(!((!rbus.RAS_rdy) & (rbus.RAS_branch | rbus.ret)));
     assign dbg=(debug || prog); //added to stop pipeline on prog and/or debug
     //debugging resister
     assign bus.adr_rs1=debug ? debug_input:bus.IF_ID_rs1;

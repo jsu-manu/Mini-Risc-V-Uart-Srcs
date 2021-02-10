@@ -29,6 +29,8 @@ logic uart_last_cond;
 logic [11:0] uart_last_addr; 
 logic [31:0] uart_last_out;
 
+logic CRAS_region;
+
 logic [2:0] cache_storecntrl = 3'b000;
 logic [4:0] cache_loadcntrl = 5'b00100; 
 
@@ -74,6 +76,8 @@ always_comb begin : mem_region
         (mem_addr_lower < 12'h408); 
     spi_region = (mem_addr_upper == 20'haaaaa) & (mem_addr_lower >= 12'h500) & 
     	(mem_addr_lower < 12'h502);
+    CRAS_region = (mem_addr_upper == 20'haaaaa) & (mem_addr_lower >= 12'h600) & 
+    	(mem_addr_lower <= 12'h61c);
 end
 
 //always_comb begin
@@ -105,6 +109,9 @@ always_comb begin
     mbus.spi_din = spi_region ? mem_din[7:0] : 8'h00;
     mbus.spi_ignore_response = spi_region ? mem_din[8] : 1'b0;  
     
+    mbus.RAS_config_din = CRAS_region ? mem_din : 32'h0; 
+    mbus.RAS_config_addr = CRAS_region ? mem_addr_lower[4:2]: 3'b000;
+    mbus.RAS_config_wr = CRAS_region ? mem_wea : 0;
 //    if (mmio_region) begin
 //        if (mem_addr_lower == 12'h400) begin
 //            mem_dout = mbus.uart_dout;

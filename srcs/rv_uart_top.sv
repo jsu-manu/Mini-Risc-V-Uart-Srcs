@@ -22,18 +22,42 @@ interface riscv_bus (
     logic uart_IRQ;
     logic trapping;
     
+    //RAS signals 
+    logic RAS_branch, ret, stack_full, stack_empty, stack_mismatch; 
+    logic [31:0] RAS_addr_in, RAS_mem_dout, RAS_mem_din, RAS_mem_addr; 
+    logic RAS_mem_rdy, RAS_mem_rd, RAS_mem_wr, RAS_rdy; 
+    logic [31:0] IF_ID_pres_addr, ins, IF_ID_dout_rs1, branoff, next_addr; 
+    logic branch, IF_ID_jal;
+    logic [4:0] IF_ID_rd;
+    
+    assign ret = (branch & (ins == 32'h8082));
+//    assign RAS_branch = (branch & (~ret));
+	assign RAS_branch = branch & IF_ID_jal & (IF_ID_rd == 1); 
+    assign RAS_mem_rdy = 1;
+    assign RAS_addr_in = RAS_branch ? (next_addr) : (ret ? branoff : 1'b0);
+//    assign RAS_addr_in = RAS_branch ? ret_addr : (ret ? IF_ID_dout_rs1 : 1'b0);
+    
     modport core(
         input clk, Rst, debug, prog, debug_input, mem_dout, imem_dout, //rx,
         output debug_output, mem_wea, mem_rea, mem_en, mem_addr, mem_din, imem_en, 
         output imem_addr, imem_din, imem_prog_ena, storecntrl,
         input key, input mem_hold, uart_IRQ, 
-        output trapping
+        output trapping, 
+        output IF_ID_pres_addr, ins, IF_ID_dout_rs1, branch, IF_ID_jal, IF_ID_rd, branoff, next_addr,
+        input stack_mismatch, RAS_rdy, RAS_branch, ret
     );
     
     modport memcon(
         input clk, Rst, mem_wea, mem_en, mem_addr, mem_din, imem_en, 
         input imem_addr, imem_din, imem_prog_ena, mem_rea, storecntrl,
         output mem_dout, imem_dout, mem_hold
+    );
+    
+    modport CRAS(
+    	input clk, Rst, RAS_branch, ret, RAS_addr_in, RAS_mem_dout,
+    	input RAS_mem_rdy, 
+    	output stack_full, stack_empty, stack_mismatch, RAS_mem_din, RAS_mem_addr,
+    	output RAS_mem_rd, RAS_mem_wr, RAS_rdy 
     );
     
     modport uart(
@@ -68,6 +92,11 @@ interface mmio_bus (
     logic spi_data_avail, spi_buffer_empty, spi_buffer_full;
     logic [7:0] spi_dout;  
     
+    //CRAS interface
+    logic [31:0] RAS_config_din; 
+    logic [2:0] RAS_config_addr; 
+    logic RAS_config_wr;
+    
     
     modport memcon(
         input clk, Rst,
@@ -77,7 +106,9 @@ interface mmio_bus (
         output uart_din, rx_ren, tx_wen, uart_addr, 
         
         input spi_data_avail, spi_buffer_empty, spi_buffer_full, spi_dout, 
-        output spi_rd, spi_wr, spi_din, spi_ignore_response
+        output spi_rd, spi_wr, spi_din, spi_ignore_response, 
+        
+        output RAS_config_din, RAS_config_addr, RAS_config_wr
     );
     
     modport display(
@@ -93,6 +124,10 @@ interface mmio_bus (
     modport spi(
     	input clk, Rst, spi_rd, spi_wr, spi_din, spi_ignore_response, spi_miso, 
     	output spi_data_avail, spi_buffer_empty, spi_buffer_full, spi_dout, spi_mosi, spi_cs, spi_sck
+    );
+    
+    modport CRAS(
+    	input RAS_config_din, RAS_config_addr, RAS_config_wr
     );
     
 endinterface
@@ -197,6 +232,8 @@ clk_div cdiv(clk,Rst,16'd500,clk_7seg);
     uart_controller u0(mbus.uart, rbus.uart);
     
     spi_controller spi0(mbus.spi);
+    
+    CRAS_top CRAS(rbus.CRAS, mbus.CRAS);
     
 //    Memory_byteaddress mem0(.clk(clk_50M), .rst(Rst), .wea(mem_wea), .en(mem_en), .addr(mem_addr),
 //        .din(mem_din), .dout(mem_dout));

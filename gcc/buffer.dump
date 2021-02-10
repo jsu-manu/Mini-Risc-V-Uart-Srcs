@@ -1,0 +1,85 @@
+
+buffer.elf:     file format elf32-littleriscv
+
+
+Disassembly of section .text:
+
+00000000 <_start>:
+   0:	00001117          	auipc	sp,0x1
+   4:	0c010113          	addi	sp,sp,192 # 10c0 <_sp0>
+   8:	00000097          	auipc	ra,0x0
+   c:	00c08093          	addi	ra,ra,12 # 14 <_endloop>
+  10:	05c000ef          	jal	ra,6c <main>
+
+00000014 <_endloop>:
+  14:	a001                	j	14 <_endloop>
+
+00000016 <secret_function>:
+  16:	1141                	addi	sp,sp,-16
+  18:	c606                	sw	ra,12(sp)
+  1a:	c422                	sw	s0,8(sp)
+  1c:	0800                	addi	s0,sp,16
+  1e:	06900513          	li	a0,105
+  22:	2885                	jal	92 <print>
+  24:	0001                	nop
+  26:	40b2                	lw	ra,12(sp)
+  28:	4422                	lw	s0,8(sp)
+  2a:	0141                	addi	sp,sp,16
+  2c:	8082                	ret
+
+0000002e <vuln_function>:
+  2e:	7179                	addi	sp,sp,-48
+  30:	d622                	sw	s0,44(sp)
+  32:	1800                	addi	s0,sp,48
+  34:	fca42e23          	sw	a0,-36(s0)
+  38:	fcb42c23          	sw	a1,-40(s0)
+  3c:	fe042623          	sw	zero,-20(s0)
+  40:	a829                	j	5a <vuln_function+0x2c>
+  42:	fec42783          	lw	a5,-20(s0)
+  46:	fdc42703          	lw	a4,-36(s0)
+  4a:	97ba                	add	a5,a5,a4
+  4c:	00078023          	sb	zero,0(a5)
+  50:	fec42783          	lw	a5,-20(s0)
+  54:	0785                	addi	a5,a5,1
+  56:	fef42623          	sw	a5,-20(s0)
+  5a:	fec42703          	lw	a4,-20(s0)
+  5e:	47fd                	li	a5,31
+  60:	fee7d1e3          	bge	a5,a4,42 <vuln_function+0x14>
+  64:	0001                	nop
+  66:	5432                	lw	s0,44(sp)
+  68:	6145                	addi	sp,sp,48
+  6a:	8082                	ret
+
+0000006c <main>:
+  6c:	1101                	addi	sp,sp,-32
+  6e:	ce06                	sw	ra,28(sp)
+  70:	cc22                	sw	s0,24(sp)
+  72:	1000                	addi	s0,sp,32
+  74:	4799                	li	a5,6
+  76:	fef42623          	sw	a5,-20(s0)
+  7a:	fe840793          	addi	a5,s0,-24
+  7e:	fec42583          	lw	a1,-20(s0)
+  82:	853e                	mv	a0,a5
+  84:	376d                	jal	2e <vuln_function>
+  86:	4781                	li	a5,0
+  88:	853e                	mv	a0,a5
+  8a:	40f2                	lw	ra,28(sp)
+  8c:	4462                	lw	s0,24(sp)
+  8e:	6105                	addi	sp,sp,32
+  90:	8082                	ret
+
+00000092 <print>:
+  92:	7179                	addi	sp,sp,-48
+  94:	d622                	sw	s0,44(sp)
+  96:	1800                	addi	s0,sp,48
+  98:	fca42e23          	sw	a0,-36(s0)
+  9c:	fe042623          	sw	zero,-20(s0)
+  a0:	fdc42783          	lw	a5,-36(s0)
+  a4:	fec42703          	lw	a4,-20(s0)
+  a8:	4701                	li	a4,0
+  aa:	aaaaa737          	lui	a4,0xaaaaa
+  ae:	c71c                	sw	a5,8(a4)
+  b0:	0001                	nop
+  b2:	5432                	lw	s0,44(sp)
+  b4:	6145                	addi	sp,sp,48
+  b6:	8082                	ret

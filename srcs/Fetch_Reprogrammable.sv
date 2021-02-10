@@ -64,7 +64,7 @@ assign comp_sig = comp;
 assign bus.comp_sig = comp_sig;
 assign debug_addr_imm[9:5] = 5'b00000;
 assign debug_addr_imm[4:0] = bus.debug_input;
-
+assign bus.next_addr = next_addr;
 //assign branoff[11] = bus.branoff[7];
 //assign branoff[10:7] = 4'b0000;
 //assign branoff[6:0] = bus.branoff[6:0];
