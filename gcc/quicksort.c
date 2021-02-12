@@ -1,4 +1,8 @@
 #include"print.h" 
+#include"uart.h" 
+// #include"malloc.h"
+#include"counter.h" 
+#include"CRAS.h"
 
 void swap(int *a, int *b) {
 	int t = *a; 
@@ -28,17 +32,69 @@ void quicksort(int arr[], int low, int high) {
 	}
 }
 
+void send_int(int a) {
+	char c; 
+	// for (int i = 0; i < 4; i++) {
+	// 	c = (a >> (8 * i)) & 0xff; 
+	// 	uart_put(c);
+	// }
+	c = (char)a; 
+	uart_put(c); 
+	c = (char)((a >> 8) & 0xff); 
+	uart_put(c);
+	c = (char)((a >> 16) & 0xff); 
+	uart_put(c);
+	c = (char)((a >> 24) & 0xff); 
+	uart_put(c);
+}
+
+int recv_int() {
+	int a; 
+	char c; 
+	// for (int i = 0; i < 4; i++) {
+	// 	c = uart_read_blocking(); 
+	// 	a |= ((int)c) << (i * 8);
+	// }
+	c = uart_read_blocking(); 
+	a = (int)c; 
+	c = uart_read_blocking(); 
+	a |= ((int)c) << 8;
+	c = uart_read_blocking(); 
+	a |= ((int)c) << 16;
+	c = uart_read_blocking(); 
+	a |= ((int)c) << 24;
+	return a; 
+}
+
 
 int main(void) {
-	// int len = 6;
-	// int arr[] = {3, 2, 5, 1, 7, 6}; 
-	int len = 32; 
-	int arr[len]; 
-	for (int i = 0; i < len; i++) {
-		arr[i] = len - i; 
-	}
-	quicksort(arr, 0, len-1);
-	for (int i = 0; i < len; i++) {
-		print((char)arr[i]);
+	uart_init();
+	while(1) {
+		char en_RAS = uart_read_blocking(); 
+		set_CRAS(en_RAS);
+		print(en_RAS);
+		int len = recv_int(); 
+		int arr[len]; 
+		// int * arr = malloc(len * sizeof(int));
+		for (int i = 0; i < len; i++) {
+			arr[i] = recv_int(); 
+		}
+		// for (int i = 0; i < len; i++) {
+		// 	arr[i] = len - i; 
+		// }
+		zero_counter(); 
+		quicksort(arr, 0, len-1);
+		unsigned int cnt = read_counter(); 
+		for (int i = 0; i < len; i++) {
+			send_int(arr[i]); 
+			uart_read_blocking();
+		}
+		send_int(cnt); 
+		print(cnt);
+		// for (int i = 0; i < len; i++) {
+		// 	print(arr[i]);
+		// }
+		// unsigned int cnt = read_counter(); 
+		// print(cnt);	
 	}
 }

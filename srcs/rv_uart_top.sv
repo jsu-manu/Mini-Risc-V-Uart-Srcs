@@ -95,7 +95,11 @@ interface mmio_bus (
     //CRAS interface
     logic [31:0] RAS_config_din; 
     logic [2:0] RAS_config_addr; 
-    logic RAS_config_wr;
+    logic RAS_config_wr, RAS_ena;
+    
+    //Counter Stuff
+    logic [31:0] cnt_dout;
+    logic cnt_zero, cnt_ovflw;
     
     
     modport memcon(
@@ -108,7 +112,9 @@ interface mmio_bus (
         input spi_data_avail, spi_buffer_empty, spi_buffer_full, spi_dout, 
         output spi_rd, spi_wr, spi_din, spi_ignore_response, 
         
-        output RAS_config_din, RAS_config_addr, RAS_config_wr
+        output RAS_config_din, RAS_config_addr, RAS_config_wr, 
+        input cnt_dout, cnt_ovflw,
+        output cnt_zero
     );
     
     modport display(
@@ -127,7 +133,13 @@ interface mmio_bus (
     );
     
     modport CRAS(
-    	input RAS_config_din, RAS_config_addr, RAS_config_wr
+    	input RAS_config_din, RAS_config_addr, RAS_config_wr, 
+    	output RAS_ena
+    );
+    
+    modport counter(
+    	input clk, Rst, cnt_zero, 
+    	output cnt_ovflw, cnt_dout
     );
     
 endinterface
@@ -210,7 +222,7 @@ clk_div cdiv(clk,Rst,16'd500,clk_7seg);
 
 //`endif
   
-  assign led = {14'h0, rbus.trapping, rbus.uart_IRQ};
+  assign led = {13'h0, mbus.RAS_ena, rbus.trapping, rbus.uart_IRQ};
   
   assign debug_output = (prog | debug ) ? rbus.debug_output : mbus.disp_out;
   
@@ -234,6 +246,8 @@ clk_div cdiv(clk,Rst,16'd500,clk_7seg);
     spi_controller spi0(mbus.spi);
     
     CRAS_top CRAS(rbus.CRAS, mbus.CRAS);
+    
+    counter cnt0(mbus.counter);
     
 //    Memory_byteaddress mem0(.clk(clk_50M), .rst(Rst), .wea(mem_wea), .en(mem_en), .addr(mem_addr),
 //        .din(mem_din), .dout(mem_dout));

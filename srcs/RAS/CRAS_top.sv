@@ -74,6 +74,7 @@ module CRAS_top #(
     	rbus.RAS_mem_din = mem_din;
     	rbus.RAS_mem_addr = mem_addr;
     	rbus.RAS_rdy = rdy;
+    	mbus.RAS_ena = RAS_ena;
     	config_addr = mbus.RAS_config_addr;
     	config_din = mbus.RAS_config_din;
     	config_wr = mbus.RAS_config_wr; 

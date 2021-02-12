@@ -31,6 +31,9 @@ logic [31:0] uart_last_out;
 
 logic CRAS_region;
 
+logic cnt_region, cnt_last;
+logic [31:0] cnt_last_out;
+
 logic [2:0] cache_storecntrl = 3'b000;
 logic [4:0] cache_loadcntrl = 5'b00100; 
 
@@ -78,6 +81,8 @@ always_comb begin : mem_region
     	(mem_addr_lower < 12'h502);
     CRAS_region = (mem_addr_upper == 20'haaaaa) & (mem_addr_lower >= 12'h600) & 
     	(mem_addr_lower <= 12'h61c);
+    cnt_region = (mem_addr_upper == 20'haaaaa) & (mem_addr_lower >= 12'h700) & 
+    	(mem_addr_lower < 12'h708); 
 end
 
 //always_comb begin
@@ -112,6 +117,7 @@ always_comb begin
     mbus.RAS_config_din = CRAS_region ? mem_din : 32'h0; 
     mbus.RAS_config_addr = CRAS_region ? mem_addr_lower[4:2]: 3'b000;
     mbus.RAS_config_wr = CRAS_region ? mem_wea : 0;
+    mbus.cnt_zero = (cnt_region & (mem_addr_lower == 12'h704)) ? mem_wea : 0; 
 //    if (mmio_region) begin
 //        if (mem_addr_lower == 12'h400) begin
 //            mem_dout = mbus.uart_dout;
@@ -125,7 +131,7 @@ always_comb begin
 //    end
 //    uart_dout = (mmio_region & (mem_addr_lower == 12'h404)) ? {6'b000000, mbus.tx_full, mbus.rx_data_present} : mbus.uart_dout;
 //    mem_dout = uart_last_cond ? uart_dout : blkmem_dout;
-    mem_dout = uart_last_cond ? uart_last_out : (spi_last_cond ? {24'h0, spi_last} : blkmem_dout);
+    mem_dout = uart_last_cond ? uart_last_out : (spi_last_cond ? {24'h0, spi_last} : (cnt_last ? cnt_last_out : blkmem_dout));
 end
 
 always_ff @(posedge clk) begin
@@ -168,6 +174,14 @@ always_ff @(posedge clk) begin
         	else
         		spi_last = {5'b0, mbus.spi_buffer_full, mbus.spi_buffer_empty, mbus.spi_data_avail};
         end else spi_last_cond <= 0;
+        
+        if (cnt_region & (mem_rea)) begin
+        	cnt_last <= 1; 
+        	if (mem_addr_lower == 12'h700)
+        		cnt_last_out <= mbus.cnt_dout;
+        	else
+        		cnt_last_out <= {31'h0, mbus.cnt_ovflw};
+        end else cnt_last <= 0; 
         
         mem_en_last <= mem_en;
         
