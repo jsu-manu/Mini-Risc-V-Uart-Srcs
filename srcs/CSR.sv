@@ -70,7 +70,10 @@ module CSR (
     
     always_ff @(posedge clk or posedge bus.trigger_trap) begin
         if (rst) begin
-        
+            mie <= 0;
+            mtvec <= 0;
+            mepc <= 0;
+            mcause <= 0;
         end else begin
             if (bus.trigger_trap) begin
 //               csr[mepc] <= bus.IF_ID_pres_addr; 

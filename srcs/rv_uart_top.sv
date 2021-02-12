@@ -30,7 +30,7 @@ interface riscv_bus (
     logic branch, IF_ID_jal;
     logic [4:0] IF_ID_rd;
     
-    assign ret = (branch & (ins == 32'h8082));
+    assign ret = (branch & ((ins == 32'h8082) | (ins == 32'h8067)));
 //    assign RAS_branch = (branch & (~ret));
 	assign RAS_branch = branch & IF_ID_jal & (IF_ID_rd == 1); 
     assign RAS_mem_rdy = 1;

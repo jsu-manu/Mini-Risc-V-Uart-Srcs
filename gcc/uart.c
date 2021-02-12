@@ -8,7 +8,7 @@ char uart_init() {
 	//set LCR 
 	*(base_ptr + 3) = (1 << 7) | (3);
 	//set baud rate divisor 
-	char baud_lower = 54; 
+	char baud_lower = 54;//2;//54; 
 	*(base_ptr) = baud_lower; 
 	*(base_ptr + 1) = 0;
 	//reset LCR 

@@ -90,13 +90,19 @@ int tx_cnt, tx_idx;
 enum {idle, reading} tx_rcv;
 logic tx_avail;
 
+logic [31:0] cnt0, cnt1;
+
+task delay();
+    #320;
+endtask
+
 task send_byte(input logic[7:0] rx_char);
 byte_sent = 0;
 rx = 0; 
-#9000; 
+delay();//#9000; 
 for (int i = 0; i < 8; i++) begin
 	rx = rx_char[i];
-	#9000;  
+	delay();//#9000;  
 end
 rx = 1; 
 byte_sent = 1;
@@ -105,11 +111,11 @@ endtask
 task send_word(input logic [31:0] rx_word); 
 
 send_byte(rx_word[7:0]);
-#9000;
+delay();//#9000;
 send_byte(rx_word[15:8]); 
-#9000;
+delay();//#9000;
 send_byte(rx_word[23:16]);
-#9000;
+delay();//#9000;
 send_byte(rx_word[31:24]);
 
 endtask
@@ -137,6 +143,8 @@ always_ff @(posedge dut.u0.B_CLK or posedge Rst) begin
 					tx_avail <= 1;
 					tx_rcv <= idle;
 				end 
+			end else begin
+			    tx_avail <= 0;
 			end
 		end else begin
 			tx_cnt <= tx_cnt + 1;
@@ -164,6 +172,8 @@ always_ff @(posedge dut.clk_50M) begin
 	end 
 end
 
+int arr_len = 48;
+
 initial begin
     $display("Begin simulaton");
 //    readfile("/home/gray/Projects/Mini-Risc-V-Uart-Srcs/gcc/test1.hex");
@@ -175,20 +185,49 @@ initial begin
     rx = 1; 
     prog = 0;
     debug_input = 0; 
+    cnt0 = 0;
+    cnt1 = 0;
     #10;
     Rst=0;
     
     #9000; 
     send_byte(0); 
-    #9000;
-    send_word(5);
+    delay();//#9000;
+    send_word(arr_len);
     
-    for (int i = 0; i < 5; i++) begin
-    	@(posedge tx_avail);
+    for (int i = 0; i < arr_len; i++) begin
+        for (int j = 0; j < 4; j++)
+    	   @(posedge tx_avail);
     	send_byte(0); 
     end
     @(posedge tx_avail);
+    cnt0[7:0] = tx_byte;
+    @(posedge tx_avail);
+    cnt0[15:8] = tx_byte;
+    @(posedge tx_avail);
+    cnt0[23:16] = tx_byte;
+    @(posedge tx_avail);
+    cnt0[31:24] = tx_byte;
     
+    send_byte(1); 
+    delay();//#9000;
+    send_word(arr_len); 
+    for (int i = 0; i < arr_len; i++) begin
+        for (int j = 0; j < 4; j++)
+    	   @(posedge tx_avail);
+    	send_byte(0); 
+    end
+    @(posedge tx_avail);
+    cnt1[7:0] = tx_byte;
+    @(posedge tx_avail);
+    cnt1[15:8] = tx_byte;
+    @(posedge tx_avail);
+    cnt1[23:16] = tx_byte;
+    @(posedge tx_avail);
+    cnt1[31:24] = tx_byte;
+    
+    $display("CNT0: %d\nCNT1: %d", cnt0, cnt1); 
+    $stop;
     
     
 //    @(posedge dut.clk_50M); 

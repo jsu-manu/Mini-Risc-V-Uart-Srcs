@@ -124,12 +124,12 @@ interface main_bus (
     logic [31:0] next_addr;
     
 
-    assign rbus.trapping = trapping;
+//    assign rbus.trapping = trapping;
     
 //    assign trigger_trap = (~trapping) & trap;
 
-	assign trap = uart_IRQ | ecall;
-
+//	assign trap = uart_IRQ | ecall;
+    assign trap = ecall;
 	always_ff @(posedge clk) begin
 		if (Rst) begin
 			trapping <= 0;

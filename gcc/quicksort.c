@@ -66,6 +66,13 @@ int recv_int() {
 	return a; 
 }
 
+char tx_fifo_empty() {
+	char c = uart_poll(); 
+	c = c & 0x20; 
+	if (c != 0) return 1;
+	else return 0;
+}
+
 
 int main(void) {
 	uart_init();
@@ -77,8 +84,8 @@ int main(void) {
 		int arr[len]; 
 		// int * arr = malloc(len * sizeof(int));
 		for (int i = 0; i < len; i++) {
-			// arr[i] = recv_int();
-			arr[i] = len - i; 
+			arr[i] = recv_int();
+			// arr[i] = len - i; 
 		}
 		// for (int i = 0; i < len; i++) {
 		// 	arr[i] = len - i; 
@@ -87,6 +94,7 @@ int main(void) {
 		quicksort(arr, 0, len-1);
 		unsigned int cnt = read_counter(); 
 		for (int i = 0; i < len; i++) {
+			while(!tx_fifo_empty());
 			send_int(arr[i]); 
 			uart_read_blocking();
 		}

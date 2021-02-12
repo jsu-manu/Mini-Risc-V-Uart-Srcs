@@ -2,7 +2,7 @@ import sys
 import os
 
 basestr = 'memory_initialization_radix=16;\nmemory_initialization_vector=\n'
-basedir = 'C:/Users/grayb/Projects/Mini-Risc-V-Uart-Srcs/gcc/'
+basedir = 'C:/Users/gbruner/Projects/Mini-Risc-V-Uart-Srcs/gcc/'
 
 mems = [list(), list(), list(), list()] 
 

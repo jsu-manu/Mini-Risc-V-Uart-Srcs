@@ -108,7 +108,7 @@ module CRAS_top #(
     
     
     simon_top #(.WW(W), .NKW(NKW)) crypto_core(.*);
-    ra_stack #(.DATA_WIDTH(32), .DEPTH(32)) ras(clk, rst, stack_ena, stack_push, stack_pop, stack_ret, 
+    ra_stack #(.DATA_WIDTH(32), .DEPTH(64)) ras(clk, rst, stack_ena, stack_push, stack_pop, stack_ret, 
     	stack_din, stack_dout, stack_mismatch, stack_full, stack_empty);
     	
     blk_mem_RAS mem0(.addra(mem_addr), .clka(clk), .dina(mem_din), .douta(mem_dout), .ena(1), .wea(wea));
