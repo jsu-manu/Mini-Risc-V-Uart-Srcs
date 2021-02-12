@@ -122,29 +122,31 @@ interface main_bus (
     logic trapping, trigger_trap, trap_ret, trigger_trap_ret; 
     
     logic [31:0] next_addr;
-//    assign rbus.trapping = trapping;
+    
+
+    assign rbus.trapping = trapping;
     
 //    assign trigger_trap = (~trapping) & trap;
 
-//	assign trap = uart_IRQ | ecall;
+	assign trap = uart_IRQ | ecall;
 
-//	always_ff @(posedge clk) begin
-//		if (Rst) begin
-//			trapping <= 0;
-//			trigger_trap <= 0;
-//			trigger_trap_ret <= 0;
-//		end else begin
-//			if (trap & (~trapping)) begin
-//				trapping <= 1;
-//				trigger_trap <= 1;
-//			end else trigger_trap <= 0;
+	always_ff @(posedge clk) begin
+		if (Rst) begin
+			trapping <= 0;
+			trigger_trap <= 0;
+			trigger_trap_ret <= 0;
+		end else begin
+			if (trap & (~trapping)) begin
+				trapping <= 1;
+				trigger_trap <= 1;
+			end else trigger_trap <= 0;
 			
-//			if (trap_ret & (trapping)) begin
-//				trapping <= 0;
-//				trigger_trap_ret <= 1;
-//			end else trigger_trap_ret <= 0;
-//		end
-//	end
+			if (trap_ret & (trapping)) begin
+				trapping <= 0;
+				trigger_trap_ret <= 1;
+			end else trigger_trap_ret <= 0;
+		end
+	end
     
 //    always_ff @(posedge trigger_trap or posedge trap_ret or posedge Rst) begin
 //    	if (Rst) trapping <= 0;

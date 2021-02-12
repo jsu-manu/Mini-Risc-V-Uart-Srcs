@@ -83,20 +83,82 @@ realtime en_tot, tot;
 logic begin_second = 0; 
 logic get_second;
 
+logic byte_sent;
+logic [7:0] tx_byte; 
+//logic tx_rcv;
+int tx_cnt, tx_idx;
+enum {idle, reading} tx_rcv;
+logic tx_avail;
+
+task send_byte(input logic[7:0] rx_char);
+byte_sent = 0;
+rx = 0; 
+#9000; 
+for (int i = 0; i < 8; i++) begin
+	rx = rx_char[i];
+	#9000;  
+end
+rx = 1; 
+byte_sent = 1;
+endtask
+
+task send_word(input logic [31:0] rx_word); 
+
+send_byte(rx_word[7:0]);
+#9000;
+send_byte(rx_word[15:8]); 
+#9000;
+send_byte(rx_word[23:16]);
+#9000;
+send_byte(rx_word[31:24]);
+
+endtask
+
+always_ff @(posedge dut.u0.B_CLK or posedge Rst) begin
+	if (Rst) begin
+		tx_cnt <= 0;
+		tx_byte <= 0;
+		tx_rcv <= idle;  
+		tx_idx <= 0;
+		tx_avail <= 0;
+	end else begin
+		if (tx_cnt == 15) begin
+			tx_cnt <= 0; 
+			if ((tx_rcv == idle) & (tx == 0)) begin
+				tx_rcv <= reading;
+				tx_idx <= 0; 
+				tx_avail <= 0;
+			end else if (tx_rcv == reading) begin
+				if (tx_idx < 8) begin
+					tx_byte[tx_idx] <= tx; 
+					tx_idx <= tx_idx + 1;
+				end else begin
+					tx_idx <= 0;
+					tx_avail <= 1;
+					tx_rcv <= idle;
+				end 
+			end
+		end else begin
+			tx_cnt <= tx_cnt + 1;
+		end
+	end
+end
+
 always_ff @(posedge dut.clk_50M) begin
 	if ((dut.rbus.IF_ID_pres_addr == 32'h14) & (dut.rbus.branch)) begin
-		if (~get_second) begin
-			t1 = $time; 
-			en_tot = t1 - t0;
-			$display("Exec time when enabled: %d", en_tot);
-			begin_second <= 1;
-		end else begin
-			t1 = $time; 
-			tot = t1 - t0; 
-			$display("Exec time when enabled: %d", en_tot);
-			$display("Exec time when disabled: %d", tot);
-			$stop;
-		end
+		$stop;
+//		if (~get_second) begin
+//			t1 = $time; 
+//			en_tot = t1 - t0;
+//			$display("Exec time when enabled: %d", en_tot);
+//			begin_second <= 1;
+//		end else begin
+//			t1 = $time; 
+//			tot = t1 - t0; 
+//			$display("Exec time when enabled: %d", en_tot);
+//			$display("Exec time when disabled: %d", tot);
+//			$stop;
+//		end
 //		$display("Total Exec Time: %d", ); 
 //		$stop;
 	end 
@@ -106,6 +168,7 @@ initial begin
     $display("Begin simulaton");
 //    readfile("/home/gray/Projects/Mini-Risc-V-Uart-Srcs/gcc/test1.hex");
 	get_second = 0;
+	byte_sent = 0;
     clk = 0;
     Rst = 1; 
     debug = 0;
@@ -115,19 +178,32 @@ initial begin
     #10;
     Rst=0;
     
-    @(posedge dut.clk_50M); 
-    t0 = $time;
-    $display("T0 = %d", t0);
+    #9000; 
+    send_byte(0); 
+    #9000;
+    send_word(5);
     
-    @(posedge begin_second);
-    Rst = 1;
+    for (int i = 0; i < 5; i++) begin
+    	@(posedge tx_avail);
+    	send_byte(0); 
+    end
+    @(posedge tx_avail);
     
-    @(posedge dut.clk_50M); 
-    @(posedge dut.clk_50M);
-    Rst = 0; 
-    dut.CRAS.RAS_ena = 0;
-    get_second = 1;
-    t0 = $time; 
+    
+    
+//    @(posedge dut.clk_50M); 
+//    t0 = $time;
+//    $display("T0 = %d", t0);
+    
+//    @(posedge begin_second);
+//    Rst = 1;
+    
+//    @(posedge dut.clk_50M); 
+//    @(posedge dut.clk_50M);
+//    Rst = 0; 
+//    dut.CRAS.RAS_ena = 0;
+//    get_second = 1;
+//    t0 = $time; 
     
     
 //    #1000
