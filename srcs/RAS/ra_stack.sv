@@ -54,6 +54,8 @@ module ra_stack #(
 //    assign full = ~(cnt < DEPTH);
     assign empty = (cnt == 0); 
 	assign full = (cnt == DEPTH);
+	
+	assign dout = (cnt == 0) ? 0 : data[cnt - 1];
     
     task stack_push;
     begin
@@ -71,7 +73,7 @@ module ra_stack #(
     begin
     	logic [DATA_WIDTH-1:0] tmp;
     	cnt--;
-    	dout = data[cnt]; 
+    	//dout = data[cnt]; 
     	tmp = data[cnt];
     	data[cnt] = 0; 
     	if ((tmp != din) & is_ret) mismatch = 1;

@@ -17,8 +17,8 @@ def recv_byte():
 def run_test(arr, arr_len, en):
     send_byte(en)
     send_int(arr_len)
-    for a in arr:
-        send_int(a)
+    #for a in arr:
+     #   send_int(a)
 
     retval = list()
     tmp = 0
@@ -70,14 +70,14 @@ def check_array(arr):
     
 
 def multi_test():
-    rept = 256
+    rept = 1
     #arr_len = 64
     len_list = list()
     c0_list = list()
     c0_val = list()
     c1_list = list()
     c1_val = list()
-    for arr_len in range(32, 73, 1):
+    for arr_len in range(32, 520, 8):
         print("Array size: %d" % arr_len)
         for i in range(rept):
             arr = list()
@@ -103,9 +103,10 @@ def multi_test():
                        "c1": c1_list})
 
     #print(df)
-        df.to_csv('test2.csv')
+        df.to_csv('test64.csv')
 
 
 multi_test()
+
 
 #fact_multi_test(3, 100)

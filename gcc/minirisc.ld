@@ -9,7 +9,7 @@ MEMORY
    * Memory with CPU cache.
    *6M CPU SRAM
    */
-  ram (wxa!ri) : ORIGIN = 0x00000000, LENGTH = 65536
+  ram (wxa!ri) : ORIGIN = 0x00000000, LENGTH = (65536 * 4)
   /*
    * Memory without CPU cache
    * 6M CPU SRAM
@@ -23,7 +23,7 @@ PROVIDE( _ram_start  = ORIGIN(ram) );
 PROVIDE( _ram_end    = ORIGIN(ram) + LENGTH(ram) );
 PROVIDE( _io_start   = 0x40000000 );
 PROVIDE( _io_end     = _io_start + LENGTH(ram) );
-PROVIDE( _stack_size = 1 << 12 );
+PROVIDE( _stack_size = 1 << 16 );
 
 
 /*

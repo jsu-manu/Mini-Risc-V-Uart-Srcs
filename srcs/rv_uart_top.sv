@@ -222,7 +222,7 @@ clk_div cdiv(clk,Rst,16'd500,clk_7seg);
 
 //`endif
   
-  assign led = {13'h0, mbus.RAS_ena, rbus.trapping, rbus.uart_IRQ};
+  assign led = {12'h0, rbus.stack_mismatch, mbus.RAS_ena, rbus.trapping, rbus.uart_IRQ};
   
   assign debug_output = (prog | debug ) ? rbus.debug_output : mbus.disp_out;
   
