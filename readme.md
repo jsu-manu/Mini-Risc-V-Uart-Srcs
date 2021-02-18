@@ -84,7 +84,7 @@ Clocking Options
 Output Clocks
   clk_out1:
     port name: clk_50M
-    output freq: 50
+    output freq: 50 (25 if timing fails)
     Duty Cycle: 50
   clk_out2
     port name: clk_5M
@@ -165,6 +165,24 @@ Native Ports
     Write Depth: 512
 ```
 
+```
+Return Address Stack BlockRAM
+
+Basic
+  Interface Type: Native
+  Implementation: Single Port RAM
+  Generate Address with 32 bits: Checked
+  No ECC
+
+Port A Options
+  Write & Read Width: 32
+  Write & Read Depth: 4096
+  Operating Mode: Write First
+  Enable Port Type: Use ENA Pin 
+  Primitives Output Register: Unchecked
+  RSTA Pin: Unchecked
+```
+
 <hr> 
 
 ## Programming the Core
@@ -179,6 +197,7 @@ Example:
 ```
 
 *Convert to coe files for memory cells & generate tcl script*
+You'll want to change the first line of `hex2coe.py` to point to `<where this repo is installed>/gcc`
 ```
 python hex2coe.py test.hex
 ```
@@ -192,6 +211,18 @@ source loadcoe.tcl
 #### Communication with the Core
 
 Communication to and from the core is done using UART, with a baud rate of 115200. Source files for using uart are in the gcc folder, specifically `uart.c` and `uart.h`, which rely on `utils.c` for some key functions, as the core does not currently support the C standard library. 
+
+#### Some useful libraries
+
+`uart.c` has the drivers for uart communication. `uart_init()` MUST be called before any serial communication can occur, as this function sets up the baud rate divisors. 
+
+`counter.c` can be used to set, reset, and check a built-in counter. This is useful for performance evaluations. 
+
+`CRAS.c` has the drivers for the Cryptographic Return Address Stack (CRAS). You can enable/disable it and change the encryption key. 
+
+`utils.c` has some functions such as implementing multiplication/division. You need to include it as well when using serial communication. 
+
+`spi.c` has the drivers for the SPI master interface. 
 
 <hr>
 
