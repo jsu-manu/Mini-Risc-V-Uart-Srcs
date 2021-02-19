@@ -172,7 +172,7 @@ always_ff @(posedge dut.clk_50M) begin
 	end 
 end
 
-int arr_len = 64;
+int arr_len = 256;
 
 initial begin
     $display("Begin simulaton");

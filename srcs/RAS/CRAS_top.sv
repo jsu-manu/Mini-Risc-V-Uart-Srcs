@@ -18,47 +18,60 @@
 // Additional Comments:
 // 
 //////////////////////////////////////////////////////////////////////////////////
-
+//`define SIMTEST
 
 module CRAS_top #(
 	parameter int W = 32,
-	parameter int NKW = 4
+	parameter int NKW = 4,
+	parameter int DEPTH = 64,
+	parameter int FILL_THRESH = 48,
+	parameter int EMPTY_THRESH = 32
 )(
+`ifndef SIMTEST
 	riscv_bus rbus,
 	mmio_bus mbus
-//	input logic clk, rst,
+`else
+	input logic clk, rst,
 	 
-//	input logic [W-1:0] addr_in, 
-//	input logic branch, ret,
-//	output logic stack_full, stack_empty, stack_mismatch, 
+	input logic [W-1:0] addr_in, 
+	input logic branch, ret,
+	output logic stack_full, stack_empty, stack_mismatch, 
 	
 //	input logic mem_rdy,
 //	input logic [W-1:0] mem_dout,
 //	output logic mem_rd, mem_wr,
 //	output logic [W-1:0] mem_din,
 //	output logic [31:0] mem_addr, 
+
+	input logic [2:0] config_addr,
+	input logic [31:0] config_din,
+	input logic config_wr,
 	
-//	output logic rdy
+	output logic rdy, RAS_ena
+`endif
 	
     );
     
-    logic clk, rst, branch, ret, stack_full, stack_empty, stack_mismatch; 
-    logic [W-1:0] addr_in; 
-    
-    logic mem_rdy, mem_rd, mem_wr, rdy; 
+    logic mem_rdy, mem_rd, mem_wr; 
     logic [W-1:0] mem_dout, mem_din;
     logic [31:0] mem_addr; 
     
-    logic [3:0] wea; 
+    `ifndef SIMTEST
+    logic clk, rst, branch, ret, stack_full, stack_empty, stack_mismatch; 
+    logic [W-1:0] addr_in; 
+    logic rdy; 
+    
+    
+    
+    
     
     logic [2:0] config_addr; 
     logic [31:0] config_din; 
     logic config_wr; 
     logic RAS_ena; 
     
-    assign wea = mem_wr ? 4'b1111 : 4'b0000;
-    
     always_comb begin
+    
     	clk = rbus.clk;
     	rst = rbus.Rst; 
     	branch = rbus.RAS_branch;
@@ -80,11 +93,20 @@ module CRAS_top #(
     	config_wr = mbus.RAS_config_wr; 
     end
     
+    `else
+    assign mem_rdy = 1;
+    `endif
+    
+    logic [3:0] wea; 
+    assign wea = mem_wr ? 4'b1111 : 4'b0000;
+    
+    
     //state enum
-    enum {idle, enc_pop1, enc_pop2, enc_begin, enc_wait, 
-    	enc_write_lower, enc_write_upper, enc_push_temp, dec_read_lower, dec_read_lower_2, 
-    	dec_read_upper, dec_begin, dec_wait, dec_push1, 
-    	dec_push2, dec_check} state, next_state; 
+    enum {idle, enc_pop1, enc_pop2, enc_pop3, enc_pop4, enc_begin, enc_wait, 
+    	enc_write_lower, enc_write_upper, enc_write_lower2, enc_write_upper2, enc_push_temp, dec_read_lower, dec_read_lower_2, 
+    	dec_read_upper, dec_read_lower2, dec_read_lower2_2, dec_read_upper2, 
+    	dec_begin, dec_wait, dec_push1, 
+    	dec_push2, dec_push3, dec_push4, dec_check} state, next_state; 
     
     //simon core signals
     logic arst_n, active_o, valid_i, ready_o, mode_i;
@@ -92,10 +114,14 @@ module CRAS_top #(
     logic [NKW-1:0][W-1:0] key_i; 
     logic valid_o, ready_i, mode_o;
     logic [1:0][W-1:0] ct_o;  
+//    logic active_o2, valid_i2, ready_o2, mode_i2; 
+//    logic [1:0][W-1:0] pt_i2, ct_o2; 
+//    logic valid_o2, ready_i2, mode_o2; 
     
     //stack signals 
     logic stack_ena, stack_push, stack_pop, stack_ret;
-    logic [W-1:0] stack_din, stack_dout;
+    logic stack_push_bot, stack_pop_bot, stack_over_thresh, stack_under_thresh;
+    logic [W-1:0] stack_din, stack_dout, stack_din_bot, stack_dout_bot;
     
     logic [W-1:0] raddr_temp_reg;
     
@@ -108,14 +134,18 @@ module CRAS_top #(
     
     
     simon_top #(.WW(W), .NKW(NKW)) crypto_core(.*);
-    ra_stack #(.DATA_WIDTH(32), .DEPTH(64)) ras(clk, rst, stack_ena, stack_push, stack_pop, stack_ret, 
-    	stack_din, stack_dout, stack_mismatch, stack_full, stack_empty);
+//    simon_top #(.WW(W), .NKW(NKW)) crypto_core2(clk, arst_n, active_o2, valid_i2, ready_o2, mode_i2,
+//    	pt_i2, key_i, valid_o2, ready_i2, mode_o2, ct_o2);
+    ra_stack #(.DATA_WIDTH(32), .DEPTH(DEPTH), .FILL_THRESH(FILL_THRESH), .EMPTY_THRESH(EMPTY_THRESH)) ras(clk, rst, stack_ena, stack_push, stack_pop, stack_ret, 
+    	stack_push_bot, stack_pop_bot,
+    	stack_din, stack_din_bot, stack_dout, stack_dout_bot, stack_mismatch, stack_full, stack_empty, stack_over_thresh, stack_under_thresh);
     	
     blk_mem_RAS mem0(.addra(mem_addr), .clka(clk), .dina(mem_din), .douta(mem_dout), .ena(1), .wea(wea));
     	
 //    assign key_i = {32'hdeadbeef, 32'hdeadbeef, 32'hdeadbeef, 32'hdeadbeef};
     assign IV = {32'hbaddab69, 32'hbaddab69}; 
-    assign rdy = (state == idle) ? 1 : 0;
+    //assign rdy = (state == idle) ? 1 : 0;
+    assign rdy = ~stack_full & ~(stack_empty & (page_count > 0) & ret);
     
     //combinational assignments
     always_comb begin
@@ -139,7 +169,141 @@ module CRAS_top #(
     	end
     end
     
+    assign stack_ena = rdy;
+    assign stack_push = rdy & branch;
+    assign stack_pop = 0; 
+    assign stack_ret = rdy & ret;
+    assign stack_din = rdy ? addr_in : 32'h0;
+    
     always_comb begin
+    	next_state = idle;
+    	stack_pop_bot = 0;
+    	stack_push_bot = 0;
+    	stack_din_bot = 0;
+    	valid_i = 0;
+//    	valid_i2 = 0;
+    	mode_i = 0; 
+//    	mode_i2 = 0;
+    	ready_i = 0;
+//    	ready_i2 = 0; 
+    	mem_wr = 0;
+    	mem_din = 0;
+    	mem_addr = 0; 
+    	mem_rd = 0; 
+    	unique case (state)
+    		idle: begin
+    			if (stack_over_thresh) begin
+    				next_state = enc_pop1; 
+    			end else if (stack_under_thresh & (page_count != 0)) begin
+    				next_state = dec_read_upper;
+    			end
+    		end
+    		enc_pop1: begin
+    			next_state = enc_pop2; 
+    			stack_pop_bot = 1; 
+    		end
+    		enc_pop2: begin
+    			next_state = enc_begin;
+    			stack_pop_bot = 1; 
+    		end
+    		enc_begin: begin
+    			valid_i = 1;
+    			mode_i = 0;
+			if (ready_o) begin
+    				next_state = enc_wait;
+    				valid_i = 0; 
+    			end else begin
+    				next_state = enc_begin;
+    			end
+    		end
+    		enc_wait: begin
+    			if (valid_o) begin
+    				ready_i = 1;
+    				next_state = enc_write_lower;
+    			end else begin 
+    				next_state = enc_wait;
+    			end
+    		end
+    		enc_write_lower: begin
+    			if (mem_rdy) begin
+    				mem_wr = 1;
+    				mem_din = ct_o[0]; 
+    				mem_addr = cur_addr;
+    				next_state = enc_write_upper;
+    			end else begin
+    				next_state = enc_write_lower; 
+    			end
+    		end
+    		enc_write_upper: begin
+    			if (mem_rdy) begin
+    				mem_wr = 1;
+    				mem_din = ct_o[1]; 
+    				mem_addr = cur_addr; 
+    				if (stack_over_thresh) 
+    					next_state = enc_pop1;
+    				else
+    					next_state = idle; 
+    			end else begin
+    				next_state = enc_write_upper;
+    			end
+    		end
+    		
+    		dec_read_lower: begin
+    			if (mem_rdy) begin
+    				mem_rd = 1; 
+    				mem_addr = cur_addr - 4;
+    				next_state = dec_read_lower_2;  
+    			end else begin
+    				next_state = dec_read_lower;
+    			end
+    		end
+    		dec_read_lower_2: begin
+    			next_state = dec_begin;
+    		end
+    		dec_read_upper: begin
+    			if (mem_rdy) begin
+    				mem_rd = 1;
+    				mem_addr = cur_addr - 4; 
+    				next_state <= dec_read_lower; 
+    			end else begin
+    				next_state = dec_read_upper;
+    			end
+    		end
+    		dec_begin: begin
+    			valid_i = 1;
+    			mode_i = 1; 
+    			if (ready_o) begin
+    				next_state = dec_wait;
+    			end else begin 
+    				next_state = dec_begin;
+    			end
+    		end
+    		dec_wait: begin
+    			if (valid_o) begin
+    				ready_i = 1;
+    				next_state <= dec_push1;
+    			end else begin
+    				next_state <= dec_wait;
+    			end
+    		end
+    		dec_push1: begin
+    			//stack_ena = 1;
+    			//stack_push = 1;
+    			stack_push_bot = 1; 
+    			stack_din_bot = ct_o[0];
+    			next_state = dec_push2; 
+    		end
+    		dec_push2: begin
+    			//stack_ena = 1;
+    			//stack_push = 1;
+    			stack_push_bot = 1;
+    			stack_din_bot = ct_o[1];
+//    			next_state = dec_check;
+				next_state = idle;
+    		end
+    	endcase
+    end
+    /*always_comb begin
     	stack_ena = 0;
     	stack_push = 0;
     	stack_pop = 0;
@@ -287,7 +451,7 @@ module CRAS_top #(
     		end
     	endcase
     end
-    
+    */
     //state logic
     always_ff @(posedge clk) begin
     	if (rst) begin
@@ -306,10 +470,10 @@ module CRAS_top #(
     				else if (next_state == dec_read_upper) enc_last <= 0;*/
     			end 
     			enc_pop1: begin
-    				pt_i[0] <= stack_dout;
+    				pt_i[0] <= stack_dout_bot;
     			end
     			enc_pop2: begin
-    				pt_i[1] <= stack_dout;
+    				pt_i[1] <= stack_dout_bot;
     			end
     			enc_begin: begin
     			
@@ -322,9 +486,10 @@ module CRAS_top #(
     			end
     			enc_write_upper: begin
     				if (mem_rdy) cur_addr <= cur_addr + 4; 
+    				page_count <= page_count + 1;
     			end
     			enc_push_temp: begin
-    				page_count <= page_count + 1;
+    				//page_count <= page_count + 1;
     			end
     			dec_read_lower: begin
     				if (mem_rdy) begin 
@@ -350,10 +515,10 @@ module CRAS_top #(
     			
     			end
     			dec_push2: begin
-    			
+    				page_count <= page_count - 1;
     			end
     			dec_check: begin
-    				if (stack_full) page_count <= page_count - 1; 
+    				//if (stack_full) page_count <= page_count - 1; 
     			end
     			default: begin
     			

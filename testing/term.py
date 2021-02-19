@@ -35,8 +35,8 @@ def fact_test(n, en):
     send_int(n)
     val = recv_byte()
     cnt = recv_byte()
-    if (val == 0):
-        print(n)
+    print(n)
+    print(cnt)
     return val, cnt
 
 def fact_multi_test(n_lower, n_upper):
@@ -60,7 +60,7 @@ def fact_multi_test(n_lower, n_upper):
 
     print(df)
 
-    df.to_csv('fact.csv')
+    df.to_csv('new_fact.csv')
 
 def check_array(arr):
     for i in range(1, len(arr)):
@@ -103,10 +103,10 @@ def multi_test():
                        "c1": c1_list})
 
     #print(df)
-        df.to_csv('test64.csv')
+        df.to_csv('new_test64.csv')
 
 
-multi_test()
+#multi_test()
 
 
-#fact_multi_test(3, 100)
+fact_multi_test(3, 100)

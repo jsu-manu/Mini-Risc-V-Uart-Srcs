@@ -73,7 +73,7 @@ end
 
 always_comb begin : mem_region
     mmio_region = (mem_addr_upper == 20'haaaaa); 
-    kernel_region = (rbus.mem_addr[31:16] == 16'h0000);
+    kernel_region = (rbus.mem_addr[31:30] == 2'b00);
     prog_region = (rbus.mem_addr[31:16] == 16'h0001); 
     uart_region = (mem_addr_upper == 20'haaaaa) & (mem_addr_lower >= 12'h400) & 
         (mem_addr_lower < 12'h408); 

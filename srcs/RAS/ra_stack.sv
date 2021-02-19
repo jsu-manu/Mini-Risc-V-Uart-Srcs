@@ -22,13 +22,16 @@
 
 module ra_stack #(
     DATA_WIDTH = 32, 
-    DEPTH = 512
+    DEPTH = 64,
+    FILL_THRESH = 48,
+    EMPTY_THRESH = 32
 )(
     input logic clk, rst, ena,
     input logic push, pop, ret, 
-    input logic [DATA_WIDTH-1:0] din, 
-    output logic [DATA_WIDTH-1:0] dout,
-    output logic mismatch, full, empty
+    input push_bottom, pop_bottom,
+    input logic [DATA_WIDTH-1:0] din,  din_bottom, 
+    output logic [DATA_WIDTH-1:0] dout, dout_bottom,
+    output logic mismatch, full, empty, over_thresh, under_thresh
 //        main_bus bus
     );
     
@@ -52,10 +55,14 @@ module ra_stack #(
     integer cnt = 0;
     
 //    assign full = ~(cnt < DEPTH);
-    assign empty = (cnt == 0); 
+    assign empty = (cnt == 0);
+//	assign empty = (cnt == bot); 
 	assign full = (cnt == DEPTH);
+	assign over_thresh = (cnt >= FILL_THRESH) ? 1'b1: 1'b0;
+ 	assign under_thresh = (cnt <= EMPTY_THRESH) ? 1'b1: 1'b0;
 	
 	assign dout = (cnt == 0) ? 0 : data[cnt - 1];
+	assign dout_bottom = data[0];
     
     task stack_push;
     begin
@@ -69,10 +76,31 @@ module ra_stack #(
     end
     endtask
     
+    task stack_push_bottom;
+    begin
+    	for (int i = DEPTH - 1; i > 0; i--) begin
+    		data[i] = data[i-1];
+    	end
+    	data[0] = din_bottom;
+    	cnt++;
+    end
+    endtask
+    
+    task stack_pop_bottom;
+    begin
+    	for (int i = 0; i < DEPTH - 1; i++) begin
+    		data[i] = data[i+1]; 
+    	end
+    	data[DEPTH-1] = 0;
+    	cnt--;
+    end
+    endtask
+    
     task stack_pop(input logic is_ret); 
     begin
     	logic [DATA_WIDTH-1:0] tmp;
     	cnt--;
+//    	if ((data[cnt] != din & )) mismatch = 1;
     	//dout = data[cnt]; 
     	tmp = data[cnt];
     	data[cnt] = 0; 
@@ -96,13 +124,20 @@ module ra_stack #(
             mismatch <= 0;
             for (int i = 0; i < DEPTH; i++)
             	data[i] <= 0;
-        end else if (ena & ~mismatch) begin
-            if (push & ~full) begin
-                stack_push(); 
-            end else if ((pop | ret) & ~empty) begin
-                stack_pop(ret);
-            end
-        end 
+        end else begin
+			if (ena & ~mismatch) begin
+				if (push & ~full) begin
+					stack_push(); 
+				end else if ((pop | ret) & ~empty) begin
+					stack_pop(ret);
+				end
+			end 
+			if (push_bottom & ~full & ~((cnt == DEPTH-1) & push)) begin
+				stack_push_bottom();
+			end else if (pop_bottom & ~empty) begin
+				stack_pop_bottom();
+			end
+        end
     end
     
     

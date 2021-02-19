@@ -25,7 +25,7 @@
 
 //Interface bus between all pipeline stages
 interface main_bus (
-    input logic clk, Rst, debug, dbg, prog, mem_hold, uart_IRQ, //rx, //addr_dn, addr_up,
+    input logic clk, Rst, debug, dbg, prog, mem_hold, uart_IRQ, RAS_rdy,//rx, //addr_dn, addr_up,
     input logic[4:0] debug_input, 
     input logic [95:0] key
 //    output logic tx
@@ -185,8 +185,8 @@ interface main_bus (
         input clk, Rst, dbg, ins, IF_ID_pres_addr, MEM_WB_rd, WB_res, mem_hold, comp_sig,
         input EX_MEM_memread, EX_MEM_regwrite, MEM_WB_regwrite, EX_MEM_alures,
         input EX_MEM_rd, IF_ID_dout_rs1, IF_ID_dout_rs2, 
-        input IF_ID_CSR, trap, trigger_trap,
-        inout ID_EX_memread, ID_EX_regwrite,
+        input IF_ID_CSR, trap, trigger_trap, RAS_rdy,
+        inout ID_EX_memread, ID_EX_regwrite, 
         output ID_EX_pres_addr, IF_ID_jalr, ID_EX_jalr, branch, IF_ID_jal,
         output IF_ID_rs1, IF_ID_rs2, IF_ID_rd,
         output ID_EX_dout_rs1, ID_EX_dout_rs2, branoff, hz,
@@ -295,6 +295,7 @@ module RISCVcore_uart(
     logic [4:0] debug_input;
     logic [31:0] debug_output, mem_addr, mem_din, mem_dout; 
     logic [3:0] mem_en; 
+    logic RAS_rdy;
     
     logic trap;
     
@@ -329,6 +330,7 @@ module RISCVcore_uart(
         rbus.IF_ID_dout_rs1 = bus.IF_ID_dout_rs1;
         rbus.branoff = bus.branoff;
         rbus.next_addr = bus.next_addr;
+        RAS_rdy = rbus.RAS_rdy;
     end
     
     

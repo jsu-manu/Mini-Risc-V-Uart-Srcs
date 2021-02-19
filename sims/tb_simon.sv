@@ -72,9 +72,9 @@ module tb_simon(
     
     always #5 clk=~clk; 
     
-    CRAS_top #(.W(WW), .NKW(NKW)) dut(.*);
+    CRAS_top #(.W(WW), .NKW(NKW), .DEPTH(64), .FILL_THRESH(48), .EMPTY_THRESH(32)) dut(.*);
     
-    parameter int TEST_VECTOR = 33;
+    parameter int TEST_VECTOR = 128;
     logic [31:0] test_addr [TEST_VECTOR]; 
     
 //    blk_mem_gen_0 mem0(clk, 1'b1, wea, mem_addr, mem_din, mem_dout);
@@ -134,12 +134,14 @@ module tb_simon(
     		@(posedge clk);
     		#10;
     		while(rdy == 0) @(posedge clk); 
+    		#5;
     		push(test_addr[i]); 
     	end
     	for (int i = TEST_VECTOR; i > 0; i--) begin
     		@(posedge clk);
     		#10
     		while(rdy == 0) @(posedge clk); 
+    		#5;
     		pop(test_addr[i-1]);
     	end
     	$display("Test successful!");
