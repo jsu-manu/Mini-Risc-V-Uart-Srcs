@@ -128,6 +128,7 @@ module CRAS_top #(
     logic [31:0] base_addr, cur_addr;
     logic [31:0] page_count;
     logic enc_last;
+    logic dec_read_last;
     
     logic [1:0][W-1:0] IV; 
     logic [1:0][W-1:0] Ck; 
@@ -461,6 +462,7 @@ module CRAS_top #(
     		page_count <= 0;
     		raddr_temp_reg <= 0;
     		enc_last <= 0;
+    		dec_read_last <= 0;
     	end else begin
     		case(state)
     			idle: begin
@@ -485,8 +487,10 @@ module CRAS_top #(
     				if (mem_rdy) cur_addr <= cur_addr + 4; 
     			end
     			enc_write_upper: begin
-    				if (mem_rdy) cur_addr <= cur_addr + 4; 
-    				page_count <= page_count + 1;
+    				if (mem_rdy) begin 
+    					cur_addr <= cur_addr + 4; 
+    					page_count <= page_count + 1;
+    				end
     			end
     			enc_push_temp: begin
     				//page_count <= page_count + 1;
@@ -494,6 +498,9 @@ module CRAS_top #(
     			dec_read_lower: begin
     				if (mem_rdy) begin 
     					cur_addr <= cur_addr - 4; 
+//    					THIS THINGpt_i[0] <= mem_dout;
+    				end
+    				if (dec_read_last) begin
     					pt_i[0] <= mem_dout;
     				end 
     			end
@@ -502,7 +509,8 @@ module CRAS_top #(
     			end
     			dec_read_upper: begin
     				if (mem_rdy) begin
-    					cur_addr <= cur_addr - 4; 
+    					cur_addr <= cur_addr - 4;
+    					dec_read_last <= 1; 
 //    					pt_i[1] <= mem_dout;
     				end
     			end

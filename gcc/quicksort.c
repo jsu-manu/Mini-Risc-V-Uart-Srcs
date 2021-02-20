@@ -84,8 +84,8 @@ int main(void) {
 		int arr[len]; 
 		// int * arr = malloc(len * sizeof(int));
 		for (int i = 0; i < len; i++) {
-			//arr[i] = recv_int();
-			arr[i] = len - i; 
+			arr[i] = recv_int();
+			// arr[i] = len - i; 
 		}
 		// for (int i = 0; i < len; i++) {
 		// 	arr[i] = len - i; 

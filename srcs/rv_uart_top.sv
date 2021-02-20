@@ -245,7 +245,7 @@ clk_div cdiv(clk,Rst,16'd500,clk_7seg);
     
     spi_controller spi0(mbus.spi);
     
-    CRAS_top #(.DEPTH(64), .FILL_THRESH(48), .EMPTY_THRESH(32)) CRAS(rbus.CRAS, mbus.CRAS);
+    //CRAS_top #(.DEPTH(64), .FILL_THRESH(48), .EMPTY_THRESH(32)) CRAS(rbus.CRAS, mbus.CRAS);
     
     counter cnt0(mbus.counter);
     
