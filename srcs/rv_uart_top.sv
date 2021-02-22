@@ -24,8 +24,9 @@ interface riscv_bus (
     
     //RAS signals 
     logic RAS_branch, ret, stack_full, stack_empty, stack_mismatch; 
-    logic [31:0] RAS_addr_in, RAS_mem_dout, RAS_mem_din, RAS_mem_addr; 
-    logic RAS_mem_rdy, RAS_mem_rd, RAS_mem_wr, RAS_rdy; 
+    logic [31:0] RAS_addr_in;
+    
+    logic RAS_rdy; 
     logic [31:0] IF_ID_pres_addr, ins, IF_ID_dout_rs1, branoff, next_addr; 
     logic branch, IF_ID_jal;
     logic [4:0] IF_ID_rd;
@@ -33,7 +34,7 @@ interface riscv_bus (
     assign ret = (branch & ((ins == 32'h8082) | (ins == 32'h8067)));
 //    assign RAS_branch = (branch & (~ret));
 	assign RAS_branch = branch & IF_ID_jal & (IF_ID_rd == 1); 
-    assign RAS_mem_rdy = 1;
+    //assign RAS_mem_rdy = 1;
     assign RAS_addr_in = RAS_branch ? (next_addr) : (ret ? branoff : 1'b0);
 //    assign RAS_addr_in = RAS_branch ? ret_addr : (ret ? IF_ID_dout_rs1 : 1'b0);
     
@@ -54,11 +55,15 @@ interface riscv_bus (
     );
     
     modport CRAS(
-    	input clk, Rst, RAS_branch, ret, RAS_addr_in, RAS_mem_dout,
-    	input RAS_mem_rdy, 
-    	output stack_full, stack_empty, stack_mismatch, RAS_mem_din, RAS_mem_addr,
-    	output RAS_mem_rd, RAS_mem_wr, RAS_rdy 
+    	input clk, Rst, RAS_branch, ret, RAS_addr_in,
+    	//input RAS_mem_rdy, 
+    	output stack_full, stack_empty, stack_mismatch, RAS_rdy
     );
+    
+//    assign RAS_rdy = 1; 
+//    assign stack_full = 0;
+//    assign stack_empty = 0;
+//    assign stack_mismatch = 0; 
     
     modport uart(
     	output uart_IRQ
@@ -96,6 +101,8 @@ interface mmio_bus (
     logic [31:0] RAS_config_din; 
     logic [2:0] RAS_config_addr; 
     logic RAS_config_wr, RAS_ena;
+    logic [31:0] RAS_mem_dout, RAS_mem_din, RAS_mem_addr; 
+    logic RAS_mem_rdy, RAS_mem_rd, RAS_mem_wr; 
     
     //Counter Stuff
     logic [31:0] cnt_dout;
@@ -113,6 +120,8 @@ interface mmio_bus (
         output spi_rd, spi_wr, spi_din, spi_ignore_response, 
         
         output RAS_config_din, RAS_config_addr, RAS_config_wr, 
+        input RAS_mem_din, RAS_mem_addr, RAS_mem_rd, RAS_mem_wr, 
+        output RAS_mem_dout, RAS_mem_rdy,
         input cnt_dout, cnt_ovflw,
         output cnt_zero
     );
@@ -134,8 +143,16 @@ interface mmio_bus (
     
     modport CRAS(
     	input RAS_config_din, RAS_config_addr, RAS_config_wr, 
-    	output RAS_ena
+    	output RAS_ena, 
+    	input RAS_mem_dout, RAS_mem_rdy,
+    	output RAS_mem_din, RAS_mem_addr, RAS_mem_rd, RAS_mem_wr
     );
+    
+//    assign RAS_ena = 0;
+//    assign RAS_mem_din = 0;
+//    assign RAS_mem_addr = 0;
+//    assign RAS_mem_rd = 0;
+//    assign RAS_mem_wr = 0;
     
     modport counter(
     	input clk, Rst, cnt_zero, 
@@ -245,7 +262,7 @@ clk_div cdiv(clk,Rst,16'd500,clk_7seg);
     
     spi_controller spi0(mbus.spi);
     
-    //CRAS_top #(.DEPTH(64), .FILL_THRESH(48), .EMPTY_THRESH(32)) CRAS(rbus.CRAS, mbus.CRAS);
+    CRAS_top #(.DEPTH(64), .FILL_THRESH(48), .EMPTY_THRESH(32)) CRAS(rbus.CRAS, mbus.CRAS);
     
     counter cnt0(mbus.counter);
     

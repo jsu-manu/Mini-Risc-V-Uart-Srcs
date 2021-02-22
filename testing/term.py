@@ -17,8 +17,8 @@ def recv_byte():
 def run_test(arr, arr_len, en):
     send_byte(en)
     send_int(arr_len)
-    for a in arr:
-        send_int(a)
+   # for a in arr:
+    #    send_int(a)
 
     retval = list()
     tmp = 0
@@ -60,7 +60,7 @@ def fact_multi_test(n_lower, n_upper):
 
     print(df)
 
-    df.to_csv('new_fact.csv')
+    df.to_csv('fact_32.csv')
 
 def check_array(arr):
     for i in range(1, len(arr)):
@@ -70,7 +70,7 @@ def check_array(arr):
     
 
 def multi_test():
-    rept = 512
+    rept = 1
     #arr_len = 64
     len_list = list()
     c0_list = list()
@@ -103,10 +103,10 @@ def multi_test():
                        "c1": c1_list})
 
     #print(df)
-        df.to_csv('new_test64.csv')
+        #df.to_csv('new_test32.csv')
 
 
 multi_test()
 
 
-#fact_multi_test(3, 100)
+#fact_multi_test(3, 512)

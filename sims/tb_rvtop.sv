@@ -191,20 +191,19 @@ initial begin
     Rst=0;
     
     #9000; 
-    send_byte(1); 
+    send_byte(0); 
     delay();//#9000;
-    send_word(arr_len);
-    
+    send_word(arr_len);   
 //    for (int i = 0; i < arr_len; i++) begin
 //    	send_word(arr_len - i);
 //    	delay();
 //    end
     
-    for (int i = 0; i < arr_len; i++) begin
+    //for (int i = 0; i < arr_len; i++) begin
         for (int j = 0; j < 4; j++)
     	   @(posedge tx_avail);
-    	send_byte(0); 
-    end
+    	//send_byte(0); 
+    //end
     @(posedge tx_avail);
     cnt0[7:0] = tx_byte;
     @(posedge tx_avail);
@@ -214,22 +213,22 @@ initial begin
     @(posedge tx_avail);
     cnt0[31:24] = tx_byte;
     
-//    send_byte(1); 
-//    delay();//#9000;
-//    send_word(arr_len); 
-//    for (int i = 0; i < arr_len; i++) begin
-//        for (int j = 0; j < 4; j++)
-//    	   @(posedge tx_avail);
-//    	send_byte(0); 
-//    end
-//    @(posedge tx_avail);
-//    cnt1[7:0] = tx_byte;
-//    @(posedge tx_avail);
-//    cnt1[15:8] = tx_byte;
-//    @(posedge tx_avail);
-//    cnt1[23:16] = tx_byte;
-//    @(posedge tx_avail);
-//    cnt1[31:24] = tx_byte;
+    send_byte(1); 
+    delay();//#9000;
+    send_word(arr_len); 
+    //for (int i = 0; i < arr_len; i++) begin
+        for (int j = 0; j < 4; j++)
+    	   @(posedge tx_avail);
+    //	send_byte(0); 
+    //end
+    @(posedge tx_avail);
+    cnt1[7:0] = tx_byte;
+    @(posedge tx_avail);
+    cnt1[15:8] = tx_byte;
+    @(posedge tx_avail);
+    cnt1[23:16] = tx_byte;
+    @(posedge tx_avail);
+    cnt1[31:24] = tx_byte;
     
     $display("CNT0: %d\nCNT1: %d", cnt0, cnt1); 
     $stop;

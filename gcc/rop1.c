@@ -8,6 +8,7 @@
 */
 #include"print.h"
 #include"memcpy.h"
+#include"CRAS.h"
 // #include<stdio.h> 
 
 
@@ -27,7 +28,7 @@ void vuln_func(int x) {
 }
 
 int main(void) {
-
+	set_CRAS(1);
 	char buf[8]; 
 	void (*fun_ptr)(void) = &badfunc; 
 	print(0x100);

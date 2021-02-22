@@ -23,13 +23,19 @@ logic mmio_region, kernel_region, prog_region, uart_region;
 logic spi_region; 
 logic spi_last_cond;
 logic [7:0] spi_last;
-logic [31:0] blkmem_dout, doutb, blkmem_din; 
+logic [31:0] blkmem_dout, doutb, blkmem_din, blkmem_addr; 
 logic [7:0] uart_dout;
 logic uart_last_cond;
 logic [11:0] uart_last_addr; 
 logic [31:0] uart_last_out;
 
 logic CRAS_region;
+logic RAS_wr, RAS_rd, RAS_mem_rdy;
+logic [31:0] RAS_din, RAS_dout, RAS_addr;
+
+logic blkmem_wr, blkmem_rd;
+logic [2:0] blkmem_strctrl;
+logic [3:0] blkmem_en;
 
 logic cnt_region, cnt_last;
 logic [31:0] cnt_last_out;
@@ -69,6 +75,12 @@ always_comb begin
     imem_din = rbus.imem_din; 
     rbus.imem_dout = imem_dout;
     rbus.mem_hold = mem_hold;
+    RAS_din = mbus.RAS_mem_din; 
+    RAS_addr = mbus.RAS_mem_addr;
+    RAS_rd = mbus.RAS_mem_rd;
+    RAS_wr = mbus.RAS_mem_wr; 
+    mbus.RAS_mem_dout = RAS_dout;
+    mbus.RAS_mem_rdy = RAS_mem_rdy; 
 end
 
 always_comb begin : mem_region
@@ -90,6 +102,11 @@ end
 //    mbus.disp_dat = disp_dat; 
     
 //end
+
+always_comb begin
+	RAS_mem_rdy = ~(mem_wea | mem_rea);
+	RAS_dout = blkmem_dout;
+end
 
 always_comb begin
 //    if (mmio_region) begin
@@ -225,7 +242,13 @@ always_comb begin
 end
 
 always_comb begin
-	blkmem_din = mem_din;
+//	blkmem_din = mem_din;
+	blkmem_din = RAS_mem_rdy ? RAS_din : mem_din;
+	blkmem_addr = RAS_mem_rdy ? RAS_addr : rbus.mem_addr;
+	blkmem_en = RAS_mem_rdy ? (RAS_wr ? 4'b1111 : 4'b0000) : mem_en;
+	blkmem_wr = RAS_mem_rdy ? RAS_wr : mem_wea;
+	blkmem_rd = RAS_mem_rdy ? RAS_rd : mem_rea;
+	blkmem_strctrl = RAS_mem_rdy ? (RAS_wr ? 3'b100 : 3'b000) : rbus.storecntrl;
 //    case (mem_en) 
 //        4'b0001: begin
 //            blkmem_din = {24'h0, mem_din[7:0]};
@@ -269,11 +292,14 @@ end
 
     
     
-    
-    Mem_Interface sharedmem(.clk(clk), .imem_en(imem_en), .mem_en((mem_wea | mem_rea) & (~mmio_region)), 
-    	.storecntrl_a(3'b000), .storecntrl_b(rbus.storecntrl), .imem_addr(imem_addr), .imem_din(32'hz), .mem_addr(rbus.mem_addr), 
-    	.mem_din(blkmem_din), .imem_wen(4'b0000), .mem_wen(mem_en), .imem_dout(imem_dout), .mem_dout(doutb) 
+    Mem_Interface sharedmem(.clk(clk), .imem_en(imem_en), .mem_en((blkmem_wr | blkmem_rd) & (~mmio_region)), 
+    	.storecntrl_a(3'b000), .storecntrl_b(blkmem_strctrl), .imem_addr(imem_addr), .imem_din(32'hz), .mem_addr(blkmem_addr), 
+    	.mem_din(blkmem_din), .imem_wen(4'b0000), .mem_wen(blkmem_en), .imem_dout(imem_dout), .mem_dout(doutb) 
     	);
+//    Mem_Interface sharedmem(.clk(clk), .imem_en(imem_en), .mem_en((mem_wea | mem_rea) & (~mmio_region)), 
+//    	.storecntrl_a(3'b000), .storecntrl_b(rbus.storecntrl), .imem_addr(imem_addr), .imem_din(32'hz), .mem_addr(rbus.mem_addr), 
+//    	.mem_din(blkmem_din), .imem_wen(4'b0000), .mem_wen(mem_en), .imem_dout(imem_dout), .mem_dout(doutb) 
+//    	);
 
 /*	Mem_Interface sharedmem(.clk(clk), .imem_en(cache_mem_ren), .mem_en((mem_wea | mem_rea) & (~mmio_region) & ~mem_hold), 
     	.storecntrl_a(3'b000), .storecntrl_b(rbus.storecntrl), .imem_addr(cache_mem_addr), .imem_din(32'hz), .mem_addr(rbus.mem_addr), 

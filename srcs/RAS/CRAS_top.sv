@@ -80,12 +80,12 @@ module CRAS_top #(
     	rbus.stack_empty = stack_empty;
     	rbus.stack_mismatch = stack_mismatch; 
     	addr_in = rbus.RAS_addr_in; 
-    	mem_rdy = rbus.RAS_mem_rdy;
-//    	mem_dout = rbus.RAS_mem_dout; 
-    	rbus.RAS_mem_rd = mem_rd;
-    	rbus.RAS_mem_wr = mem_wr; 
-    	rbus.RAS_mem_din = mem_din;
-    	rbus.RAS_mem_addr = mem_addr;
+    	mem_rdy = mbus.RAS_mem_rdy;
+    	mem_dout = mbus.RAS_mem_dout; 
+    	mbus.RAS_mem_rd = mem_rd;
+    	mbus.RAS_mem_wr = mem_wr; 
+    	mbus.RAS_mem_din = mem_din;
+    	mbus.RAS_mem_addr = mem_addr;
     	rbus.RAS_rdy = rdy;
     	mbus.RAS_ena = RAS_ena;
     	config_addr = mbus.RAS_config_addr;
@@ -141,7 +141,7 @@ module CRAS_top #(
     	stack_push_bot, stack_pop_bot,
     	stack_din, stack_din_bot, stack_dout, stack_dout_bot, stack_mismatch, stack_full, stack_empty, stack_over_thresh, stack_under_thresh);
     	
-    blk_mem_RAS mem0(.addra(mem_addr), .clka(clk), .dina(mem_din), .douta(mem_dout), .ena(1), .wea(wea));
+//    blk_mem_RAS mem0(.addra(mem_addr), .clka(clk), .dina(mem_din), .douta(mem_dout), .ena(1), .wea(wea));
     	
 //    assign key_i = {32'hdeadbeef, 32'hdeadbeef, 32'hdeadbeef, 32'hdeadbeef};
     assign IV = {32'hbaddab69, 32'hbaddab69}; 
@@ -156,10 +156,12 @@ module CRAS_top #(
     always_ff @(posedge clk) begin
     	if (rst) begin
     		RAS_ena <= 1; 
+    		base_addr <= 0;
     		key_i <= {32'hdeadbeef, 32'hdeadbeef, 32'hdeadbeef, 32'hdeadbeef};
     	end else if (config_wr) begin
     		case(config_addr)
-    			3'b000: RAS_ena <= config_din[0]; 
+    			3'b000: RAS_ena <= config_din[0];
+    			3'b001: base_addr <= config_din; 
     			3'b100: key_i[0] <= config_din;
     			3'b101: key_i[1] <= config_din;
     			3'b110: key_i[2] <= config_din;
@@ -170,7 +172,7 @@ module CRAS_top #(
     	end
     end
     
-    assign stack_ena = rdy;
+    assign stack_ena = RAS_ena & rdy;
     assign stack_push = rdy & branch;
     assign stack_pop = 0; 
     assign stack_ret = rdy & ret;
@@ -229,7 +231,7 @@ module CRAS_top #(
     			if (mem_rdy) begin
     				mem_wr = 1;
     				mem_din = ct_o[0]; 
-    				mem_addr = cur_addr;
+    				mem_addr = base_addr + cur_addr;
     				next_state = enc_write_upper;
     			end else begin
     				next_state = enc_write_lower; 
@@ -239,7 +241,7 @@ module CRAS_top #(
     			if (mem_rdy) begin
     				mem_wr = 1;
     				mem_din = ct_o[1]; 
-    				mem_addr = cur_addr; 
+    				mem_addr = base_addr + cur_addr; 
     				if (stack_over_thresh) 
     					next_state = enc_pop1;
     				else
@@ -252,7 +254,7 @@ module CRAS_top #(
     		dec_read_lower: begin
     			if (mem_rdy) begin
     				mem_rd = 1; 
-    				mem_addr = cur_addr - 4;
+    				mem_addr = base_addr + cur_addr - 4;
     				next_state = dec_read_lower_2;  
     			end else begin
     				next_state = dec_read_lower;
@@ -264,8 +266,8 @@ module CRAS_top #(
     		dec_read_upper: begin
     			if (mem_rdy) begin
     				mem_rd = 1;
-    				mem_addr = cur_addr - 4; 
-    				next_state <= dec_read_lower; 
+    				mem_addr = base_addr + cur_addr - 4; 
+    				next_state = dec_read_lower; 
     			end else begin
     				next_state = dec_read_upper;
     			end
@@ -282,9 +284,9 @@ module CRAS_top #(
     		dec_wait: begin
     			if (valid_o) begin
     				ready_i = 1;
-    				next_state <= dec_push1;
+    				next_state = dec_push1;
     			end else begin
-    				next_state <= dec_wait;
+    				next_state = dec_wait;
     			end
     		end
     		dec_push1: begin
@@ -457,7 +459,6 @@ module CRAS_top #(
     always_ff @(posedge clk) begin
     	if (rst) begin
     		state <= idle; 
-    		base_addr <= 0;
     		cur_addr <= 0;
     		page_count <= 0;
     		raddr_temp_reg <= 0;
@@ -502,6 +503,7 @@ module CRAS_top #(
     				end
     				if (dec_read_last) begin
     					pt_i[0] <= mem_dout;
+    					dec_read_last <= 0;
     				end 
     			end
     			dec_read_lower_2: begin
