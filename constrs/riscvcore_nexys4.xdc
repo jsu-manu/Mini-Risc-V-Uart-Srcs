@@ -180,7 +180,7 @@ set_property PACKAGE_PIN N4 [get_ports {an[5]}]
 ##Bank = 34, Pin name = IO_L1P_T0_34,						Sch name = AN6
 set_property PACKAGE_PIN L1 [get_ports {an[6]}]					
 	set_property IOSTANDARD LVCMOS33 [get_ports {an[6]}]
-##Bank = 34, Pin name = IO_L1N_T034,						Sch name = AN7
+##Bank = 34, Pin name = IO_L1N_T034,							Sch name = AN7
 set_property PACKAGE_PIN M1 [get_ports {an[7]}]					
 	set_property IOSTANDARD LVCMOS33 [get_ports {an[7]}]
 
@@ -555,11 +555,11 @@ set_property PACKAGE_PIN D4 [get_ports tx]
 #set_property PACKAGE_PIN E9 [get_ports {QspiSCK}]					
 	#set_property IOSTANDARD LVCMOS33 [get_ports {QspiSCK}]
 ##Bank = CONFIG, Pin name = IO_L1P_T0_D00_MOSI_14,			Sch name = QSPI_DQ0
-#set_property PACKAGE_PIN K17 [get_ports {QspiDB[0]}]				
-	#set_property IOSTANDARD LVCMOS33 [get_ports {QspiDB[0]}]
+set_property PACKAGE_PIN K17 [get_ports mosi]				
+	set_property IOSTANDARD LVCMOS33 [get_ports mosi]
 ##Bank = CONFIG, Pin name = IO_L1N_T0_D01_DIN_14,			Sch name = QSPI_DQ1
-#set_property PACKAGE_PIN K18 [get_ports {QspiDB[1]}]				
-	#set_property IOSTANDARD LVCMOS33 [get_ports {QspiDB[1]}]
+set_property PACKAGE_PIN K18 [get_ports miso]				
+	set_property IOSTANDARD LVCMOS33 [get_ports miso]
 ##Bank = CONFIG, Pin name = IO_L20_T0_D02_14,				Sch name = QSPI_DQ2
 #set_property PACKAGE_PIN L14 [get_ports {QspiDB[2]}]				
 	#set_property IOSTANDARD LVCMOS33 [get_ports {QspiDB[2]}]
@@ -567,8 +567,8 @@ set_property PACKAGE_PIN D4 [get_ports tx]
 #set_property PACKAGE_PIN M14 [get_ports {QspiDB[3]}]				
 	#set_property IOSTANDARD LVCMOS33 [get_ports {QspiDB[3]}]
 ##Bank = CONFIG, Pin name = IO_L15N_T2_DQS_DOUT_CSO_B_14,	Sch name = QSPI_CSN
-#set_property PACKAGE_PIN L13 [get_ports QspiCSn]					
-	#set_property IOSTANDARD LVCMOS33 [get_ports QspiCSn]
+set_property PACKAGE_PIN L13 [get_ports cs]					
+	set_property IOSTANDARD LVCMOS33 [get_ports cs]
 
 
 
