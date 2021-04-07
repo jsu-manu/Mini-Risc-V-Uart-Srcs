@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wave_config>
+   <wave_state>
+   </wave_state>
+   <db_ref_list>
+      <db_ref path="tb_rvtop_behav.wdb" id="1">
+         <top_modules>
+            <top_module name="\$unit_ALU_sv " />
+            <top_module name="glbl" />
+            <top_module name="hashpkg" />
+            <top_module name="tb_rvtop" />
+         </top_modules>
+      </db_ref>
+   </db_ref_list>
+   <zoom_setting>
+      <ZoomStartTime time="5842000fs"></ZoomStartTime>
+      <ZoomEndTime time="7278001fs"></ZoomEndTime>
+      <Cursor1Time time="6434000fs"></Cursor1Time>
+   </zoom_setting>
+   <column_width_setting>
+      <NameColumnWidth column_width="256"></NameColumnWidth>
+      <ValueColumnWidth column_width="113"></ValueColumnWidth>
+   </column_width_setting>
+   <WVObjectSize size="22" />
+   <wvobject fp_name="/tb_rvtop/clk" type="logic">
+      <obj_property name="ElementShortName">clk</obj_property>
+      <obj_property name="ObjectShortName">clk</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_rvtop/Rst" type="logic">
+      <obj_property name="ElementShortName">Rst</obj_property>
+      <obj_property name="ObjectShortName">Rst</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_rvtop/dut/rv_core/u3/ALUop1" type="array">
+      <obj_property name="ElementShortName">ALUop1[31:0]</obj_property>
+      <obj_property name="ObjectShortName">ALUop1[31:0]</obj_property>
+      <obj_property name="Radix">SIGNEDDECRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_rvtop/dut/rv_core/u3/ALUop2" type="array">
+      <obj_property name="ElementShortName">ALUop2[31:0]</obj_property>
+      <obj_property name="ObjectShortName">ALUop2[31:0]</obj_property>
+      <obj_property name="Radix">SIGNEDDECRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_rvtop/dut/rv_core/u4/MEM_WB_memres" type="array">
+      <obj_property name="ElementShortName">MEM_WB_memres[31:0]</obj_property>
+      <obj_property name="ObjectShortName">MEM_WB_memres[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_rvtop/dut/rv_core/u5/bus/WB_res" type="array">
+      <obj_property name="ElementShortName">WB_res[31:0]</obj_property>
+      <obj_property name="ObjectShortName">WB_res[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_rvtop/dut/rv_core/u4/bus/MEM_WB_regwrite" type="logic">
+      <obj_property name="ElementShortName">MEM_WB_regwrite</obj_property>
+      <obj_property name="ObjectShortName">MEM_WB_regwrite</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_rvtop/dut/rv_core/u0/bus/MEM_WB_rd" type="array">
+      <obj_property name="ElementShortName">MEM_WB_rd[4:0]</obj_property>
+      <obj_property name="ObjectShortName">MEM_WB_rd[4:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_rvtop/dut/rv_core/u1/bus/ins" type="array">
+      <obj_property name="ElementShortName">ins[31:0]</obj_property>
+      <obj_property name="ObjectShortName">ins[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_rvtop/dut/rv_core/u0/bus/adr_rs1" type="array">
+      <obj_property name="ElementShortName">adr_rs1[4:0]</obj_property>
+      <obj_property name="ObjectShortName">adr_rs1[4:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_rvtop/dut/rv_core/u4/bus/EX_MEM_dout_rs2" type="array">
+      <obj_property name="ElementShortName">EX_MEM_dout_rs2[31:0]</obj_property>
+      <obj_property name="ObjectShortName">EX_MEM_dout_rs2[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_rvtop/dut/rv_core/u4/ctrl_fwd" type="logic">
+      <obj_property name="ElementShortName">ctrl_fwd</obj_property>
+      <obj_property name="ObjectShortName">ctrl_fwd</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_rvtop/dut/rv_core/u4/memforward" type="array">
+      <obj_property name="ElementShortName">memforward[31:0]</obj_property>
+      <obj_property name="ObjectShortName">memforward[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_rvtop/dut/rv_core/u4/bus/WB_res" type="array">
+      <obj_property name="ElementShortName">WB_res[31:0]</obj_property>
+      <obj_property name="ObjectShortName">WB_res[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_rvtop/dut/rv_core/photon/pho_bus/ready" type="logic">
+      <obj_property name="ElementShortName">ready</obj_property>
+      <obj_property name="ObjectShortName">ready</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_rvtop/dut/rv_core/photon/pho_bus/opcode" type="array">
+      <obj_property name="ElementShortName">opcode[2:0]</obj_property>
+      <obj_property name="ObjectShortName">opcode[2:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_rvtop/dut/rv_core/photon/pho_bus/addr" type="array">
+      <obj_property name="ElementShortName">addr[2:0]</obj_property>
+      <obj_property name="ObjectShortName">addr[2:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_rvtop/dut/rv_core/photon/pho_bus/data_in" type="array">
+      <obj_property name="ElementShortName">data_in[31:0]</obj_property>
+      <obj_property name="ObjectShortName">data_in[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_rvtop/dut/rv_core/photon/pho_bus/data_out" type="array">
+      <obj_property name="ElementShortName">data_out[31:0]</obj_property>
+      <obj_property name="ObjectShortName">data_out[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_rvtop/dut/rv_core/u0/regdata" type="array">
+      <obj_property name="ElementShortName">regdata[31:0][31:0]</obj_property>
+      <obj_property name="ObjectShortName">regdata[31:0][31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_rvtop/dut/rv_core/photon/pho0/reg_input" type="array">
+      <obj_property name="ElementShortName">reg_input[7:0][31:0]</obj_property>
+      <obj_property name="ObjectShortName">reg_input[7:0][31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_rvtop/dut/rv_core/photon/pho0/reg_output" type="array">
+      <obj_property name="ElementShortName">reg_output[7:0][31:0]</obj_property>
+      <obj_property name="ObjectShortName">reg_output[7:0][31:0]</obj_property>
+      <obj_property name="isExpanded"></obj_property>
+   </wvobject>
+</wave_config>

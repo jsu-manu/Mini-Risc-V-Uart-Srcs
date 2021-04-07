@@ -118,6 +118,11 @@ interface main_bus (
     
 //    logic ID_EX_CSR_write;
 
+    //photon_core signals
+    logic [31:0] photon_ins, photon_data_out;
+    logic photon_busy, photon_regwrite;
+    logic [4:0] adr_photon_rs1, addr_corereg_photon;
+
     //modport declarations. These ensure each pipeline stage only sees and has access to the 
     //ports and signals that it needs
     
@@ -138,8 +143,8 @@ interface main_bus (
     
     //modport for register file
     modport regfile(
-        input clk, adr_rs1, IF_ID_rs2, MEM_WB_rd, Rst,
-        input WB_res, MEM_WB_regwrite,
+        input clk, adr_rs1, adr_photon_rs1, IF_ID_rs2, MEM_WB_rd, addr_corereg_photon, Rst,
+        input WB_res, MEM_WB_regwrite, photon_data_out, photon_regwrite,
         output IF_ID_dout_rs1, IF_ID_dout_rs2 
     ); 
         
@@ -204,6 +209,11 @@ interface main_bus (
         input MEM_WB_regwrite, MEM_WB_rd,
         input MEM_WB_CSR, MEM_WB_CSR_read,
         output WB_ID_regwrite, WB_ID_rd, WB_res, WB_ID_res
+    );
+    
+    //modport for photon_core
+    modport photon_core(
+        /* TODO */
     );
     
 //    modport rstack(
@@ -335,6 +345,8 @@ module RISCVcore_uart(
     Memory u4(bus.memory);
     
     Writeback u5(bus.writeback);
+    
+    photon_core photon(bus);
     
 //    ra_stack uS(bus.rstack);
     
