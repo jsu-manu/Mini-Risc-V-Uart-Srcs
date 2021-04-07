@@ -42,23 +42,30 @@ module branchforward
   input  logic [31:0] imm,
   input  logic [31:0] alures,
   input  logic [31:0] wbres,
+  input  logic [31:0] divres,
   input  logic        EX_MEM_regwrite,
   input  logic        MEM_WB_regwrite,
   input  logic        EX_MEM_memread,
+  input  logic        div_ready,
   output logic [31:0] rs1_mod,
   output logic [31:0] rs2_mod);
   
   logic [1:0] sel1, sel2;
   
   
-  assign sel1 = (zero3 && EX_MEM_regwrite && (!EX_MEM_memread)) ? 2'b00 : (zeroa && MEM_WB_regwrite) ? 2'b01 : 2'b11;
-  assign sel2 = (zero4 && EX_MEM_regwrite && (!EX_MEM_memread)) ? 2'b00 : (zerob && MEM_WB_regwrite) ? 2'b01 : 2'b11;
+  assign sel1 = (zero3 && EX_MEM_regwrite && (!EX_MEM_memread) && (!div_ready)) ? 2'b00 :
+                (zero3 && EX_MEM_regwrite && (!EX_MEM_memread) && div_ready)    ? 2'b10 :
+                (zeroa && MEM_WB_regwrite)                                      ? 2'b01 : 2'b11;
+  assign sel2 = (zero4 && EX_MEM_regwrite && (!EX_MEM_memread) && (!div_ready)) ? 2'b00 :
+                (zero4 && EX_MEM_regwrite && (!EX_MEM_memread) && div_ready)    ? 2'b10 :
+                (zerob && MEM_WB_regwrite)                                      ? 2'b01 : 2'b11;
 
   //assign sel2 = zero4 && EX_MEM_regwrite && (!EX_MEM_memread);
   always_comb
       case(sel1)
         2'b00   : rs1_mod = alures;
         2'b01   : rs1_mod = wbres;
+        2'b10   : rs1_mod = divres;
         2'b11   : rs1_mod = rs1;
         default : rs1_mod = rs1; 
       endcase  
@@ -67,6 +74,7 @@ module branchforward
         case(sel2)
           2'b00   : rs2_mod = alures;
           2'b01   : rs2_mod = wbres;
+          2'b10   : rs2_mod = divres;
           2'b11   : rs2_mod = rs2;
           default : rs2_mod = rs2; 
         endcase  

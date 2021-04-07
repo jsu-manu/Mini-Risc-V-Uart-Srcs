@@ -26,7 +26,9 @@
 module Writeback(main_bus bus);
   
   logic [31:0] WB_res_sig; 
-  assign WB_res_sig = (bus.MEM_WB_memread) ? bus.MEM_WB_memres : bus.MEM_WB_alures;
+  assign WB_res_sig = (bus.MEM_WB_memread) ? bus.MEM_WB_memres :
+                      (bus.MEM_WB_mul_ready) ? bus.MEM_WB_mulres :
+                      (bus.MEM_WB_div_ready) ? bus.MEM_WB_divres : bus.MEM_WB_alures;
   assign bus.WB_res     = WB_res_sig;
   
   always_ff @(posedge bus.clk) begin

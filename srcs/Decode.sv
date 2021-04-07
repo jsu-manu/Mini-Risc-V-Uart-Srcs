@@ -85,6 +85,7 @@ logic [31:0]dout_rs1,dout_rs2;
 
 //control
 logic [2:0]IF_ID_alusel;
+logic [2:0]IF_ID_mulsel;
 logic      IF_ID_branch;
 logic      IF_ID_memwrite,IF_ID_memread,IF_ID_regwrite,IF_ID_alusrc;
 logic [2:0]IF_ID_storecntrl;
@@ -96,6 +97,8 @@ logic      IF_ID_auipc;
 logic [31:0]imm;
 logic hz_sig;
 logic branch_taken_sig;
+logic div_ready_sig;
+logic div_ready;
 
 //separating different field of instruction
 assign funct3=bus.ins[14:12];
@@ -108,11 +111,12 @@ assign IF_ID_rd=bus.ins[11:7];
 //assign debug_out=debug;
 assign bus.branch=branch_taken_sig;
 assign ins_zero=!(|bus.ins);
-assign bus.hz=hz_sig;
+assign bus.hz=hz_sig || (mul_inst && !bus.mul_ready) || (div_inst && !bus.div_ready);
    
    
    //control signal generation
    Control u1(
+       .clk(bus.clk),
        .opcode(bus.ins[6:0]),
        .funct3(funct3),
        .funct7(funct7),
@@ -120,6 +124,8 @@ assign bus.hz=hz_sig;
        .flush(flush),
        .hazard(hz_sig),
        .alusel(IF_ID_alusel),
+       .mulsel(IF_ID_mulsel),
+       .divsel(IF_ID_divsel),
        .branch(IF_ID_branch),
        .memwrite(IF_ID_memwrite),
        .memread(IF_ID_memread),
@@ -132,8 +138,9 @@ assign bus.hz=hz_sig;
        .jalr(IF_ID_jalr_sig),
        .storecntrl(IF_ID_storecntrl),
        .loadcntrl(IF_ID_loadcntrl),
-       .cmpcntrl(IF_ID_cmpcntrl)
-       
+       .cmpcntrl(IF_ID_cmpcntrl),
+       .mul_inst(mul_inst),
+       .div_inst(div_inst)
    );
    //branchforward
    branchforward u0(
@@ -147,9 +154,11 @@ assign bus.hz=hz_sig;
        .imm(imm),
        .alures(bus.EX_MEM_alures),
        .wbres(bus.WB_res),
+       .divres(bus.EX_MEM_divres),
        .EX_MEM_regwrite(bus.EX_MEM_regwrite),
        .EX_MEM_memread(bus.EX_MEM_memread),
        .MEM_WB_regwrite(bus.MEM_WB_regwrite),
+       .div_ready(div_ready_sig),
        .rs1_mod(rs1_mod),
        .rs2_mod(rs2_mod)
        );
@@ -211,6 +220,8 @@ assign bus.hz=hz_sig;
    always_ff @(posedge bus.clk)begin
         if(bus.Rst)begin
             bus.ID_EX_alusel<=3'h0;
+            bus.ID_EX_mulsel<=3'h0;
+            bus.ID_EX_divsel<=3'h0;
             bus.ID_EX_alusrc<=1'b0;
             ID_EX_memread_sig<=1'b0;
             bus.ID_EX_memwrite<=1'b0;
@@ -231,10 +242,13 @@ assign bus.hz=hz_sig;
             bus.ID_EX_jalr<=1'b0;
             bus.ID_EX_lui<=1'b0;
             bus.ID_EX_auipc<=1'b0;
+            div_ready_sig<=0;
             end
         else if(!bus.dbg && !bus.mem_hold) begin
             if (!hz_sig) begin
                 bus.ID_EX_alusel<=IF_ID_alusel;
+                bus.ID_EX_mulsel<=IF_ID_mulsel;
+                bus.ID_EX_divsel<=IF_ID_divsel;
                 bus.ID_EX_alusrc<=IF_ID_alusrc;
                 ID_EX_memread_sig<=IF_ID_memread;
                 bus.ID_EX_memwrite<=IF_ID_memwrite;
@@ -256,6 +270,7 @@ assign bus.hz=hz_sig;
                 bus.ID_EX_jalr<=IF_ID_jalr_sig;
                 bus.ID_EX_lui<=IF_ID_lui;
                 bus.ID_EX_auipc<=IF_ID_auipc;
+                div_ready_sig<=bus.div_ready;
             end else begin
                 bus.ID_EX_alusel<=3'b000;
                 bus.ID_EX_alusrc<=1'b1;
@@ -279,6 +294,7 @@ assign bus.hz=hz_sig;
                 bus.ID_EX_jalr<=1'b0;
                 bus.ID_EX_lui<=1'b0;
                 bus.ID_EX_auipc<=1'b0;
+                div_ready_sig<=div_ready;
             end
         end
     end
@@ -289,4 +305,5 @@ assign bus.hz=hz_sig;
     assign flush=flush_sig;
     assign bus.IF_ID_jalr=IF_ID_jalr_sig;
     assign bus.IF_ID_jal = IF_ID_jal;
+    assign div_ready=div_ready_sig;
 endmodule
