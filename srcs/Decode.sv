@@ -86,6 +86,7 @@ logic [31:0]dout_rs1,dout_rs2;
 //control
 logic [2:0]IF_ID_alusel;
 logic [2:0]IF_ID_mulsel;
+logic [2:0]IF_ID_divsel;
 logic      IF_ID_branch;
 logic      IF_ID_memwrite,IF_ID_memread,IF_ID_regwrite,IF_ID_alusrc;
 logic [2:0]IF_ID_storecntrl;
@@ -99,6 +100,9 @@ logic hz_sig;
 logic branch_taken_sig;
 logic div_ready_sig;
 logic div_ready;
+
+logic mul_inst;
+logic div_inst;
 
 //separating different field of instruction
 assign funct3=bus.ins[14:12];

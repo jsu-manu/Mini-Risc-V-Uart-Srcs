@@ -49,7 +49,6 @@ module Control
   input  logic ins_zero,
   input  logic flush,
   input  logic hazard,
-  input  logic mul_ready,
   output logic [2:0]alusel,
   output logic [2:0]mulsel,
   output logic [2:0]divsel,
@@ -103,8 +102,8 @@ module Control
 	jal=1'b0;
 	jalr=1'b0;
 	illegal_ins=1'b0;
-  mul_inst=1'b0;
-  div_inst=1'b0;
+	mul_inst=1'b0;
+	div_inst=1'b0;
   
     unique case (opcode)
       7'b0000011:               // load
@@ -213,8 +212,8 @@ module Control
       end
 		  default:
 		    illegal_ins=1'b1;				
-          endcase
-      end		
+      endcase
+    end		
       7'b0010011:               // I-arith
 		begin
 		regwrite=(!stall)&&(1'b1);
