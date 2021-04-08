@@ -46,7 +46,7 @@ Next, open `build-rv32ima.sh` and edit the two lines starting with `build_projec
 $ ./build-rv32ima.sh
 ```
 
-*You can also install just the toolchain without the simulator using just the toolchain repo* 
+*You can also install just the toolchain without the simulator using just the toolchain repo*
 
 ```bash
 $ git clone https://github.com/riscv/riscv-gnu-toolchain
@@ -75,7 +75,7 @@ Clocking Options
   Clocking Features: Frequency Synthesis
   Jitter Optimization: Balanced
   Input Clock Information:
-    Input Clock:Primary 
+    Input Clock:Primary
     Port Name: clk
     Input Frequency: 100
     Input Jitter 0.010
@@ -126,26 +126,23 @@ Other Options:
 ``` -->
 
 ```
-Block RAM Cells 
+Block RAM Cells
 
-Component name: mem_cell_0/1/2/3
+Component name: mem_cell_0/1/2/3 and imem_cell_0/1/2/3
 
 Basic
   Interface Type: Native
-  Memory Type: True Dual Port RAM
+  Memory Type: Single Port RAM
   ECC Type: No ECC
-  Write Enable: Unchecked 
+  Write Enable: Unchecked
   Algorithm Options: Minimum Area
 
 Port A Options:
   Write & Read width: 8
-  Write & Read depth: 32768
+  Write & Read depth: 16384
   Operating Mode: Write first
   Enable Port Type: Use ENA pin
-  Uncheck Primitives output register and RSTA pin 
-
-Port B Options:
-  Identical to port A 
+  Uncheck Primitives output register and RSTA pin
 
 Other Options:
   Check Fill Remaining Memory Locations
@@ -165,7 +162,7 @@ Native Ports
     Write Depth: 512
 ```
 
-```
+<!--```
 Return Address Stack BlockRAM
 
 Basic
@@ -178,16 +175,16 @@ Port A Options
   Write & Read Width: 32
   Write & Read Depth: 4096
   Operating Mode: Write First
-  Enable Port Type: Use ENA Pin 
+  Enable Port Type: Use ENA Pin
   Primitives Output Register: Unchecked
   RSTA Pin: Unchecked
-```
+```-->
 
-<hr> 
+<hr>
 
 ## Programming the Core
 
-A c program may be compiled and loaded onto the core as a `.coe` file for the block memory. Within the `gcc` folder is a number of example and test programs, as well as a python script called `pycompile.py`. This script leverages the riscv toolchain to compile an ELF file, which is converted into a coe. It can also create a plain hex file for loading onto the core with the in-development kernel. 
+A c program may be compiled and loaded onto the core as a `.coe` file for the block memory. Within the `gcc` folder is a number of example and test programs, as well as a python script called `pycompile.py`. This script leverages the riscv toolchain to compile an ELF file, which is converted into a coe. It can also create a plain hex file for loading onto the core with the in-development kernel.
 
 Example:
 
@@ -197,7 +194,7 @@ Example:
 ```
 
 *Convert to coe files for memory cells & generate tcl script*
-You'll want to change the first line of `hex2coe.py` to point to `<where this repo is installed>/gcc`
+You'll want to change the first line of `hex2coe.py` to point to `<where this repo is installed>/gcc/`
 ```
 python hex2coe.py test.hex
 ```
@@ -210,34 +207,34 @@ source loadcoe.tcl
 
 #### Communication with the Core
 
-Communication to and from the core is done using UART, with a baud rate of 115200. Source files for using uart are in the gcc folder, specifically `uart.c` and `uart.h`, which rely on `utils.c` for some key functions, as the core does not currently support the C standard library. 
+Communication to and from the core is done using UART, with a baud rate of 115200. Source files for using uart are in the gcc folder, specifically `uart.c` and `uart.h`, which rely on `utils.c` for some key functions, as the core does not currently support the C standard library.
 
 #### Some useful libraries
 
-`uart.c` has the drivers for uart communication. `uart_init()` MUST be called before any serial communication can occur, as this function sets up the baud rate divisors. 
+`uart.c` has the drivers for uart communication. `uart_init()` MUST be called before any serial communication can occur, as this function sets up the baud rate divisors.
 
-`counter.c` can be used to set, reset, and check a built-in counter. This is useful for performance evaluations. 
+`counter.c` can be used to set, reset, and check a built-in counter. This is useful for performance evaluations.
 
-`CRAS.c` has the drivers for the Cryptographic Return Address Stack (CRAS). You can enable/disable it and change the encryption key. 
+`CRAS.c` has the drivers for the Cryptographic Return Address Stack (CRAS). You can enable/disable it and change the encryption key.
 
-`utils.c` has some functions such as implementing multiplication/division. You need to include it as well when using serial communication. 
+`utils.c` has some functions such as implementing multiplication/division. You need to include it as well when using serial communication.
 
-`spi.c` has the drivers for the SPI master interface. 
+`spi.c` has the drivers for the SPI master interface.
 
 <hr>
 
-## Mini-RISC-V Program Kernel 
+## Mini-RISC-V Program Kernel
 
 This feature is currently in development. It is a software kernel that is loaded by default onto the core, that allows binaries to be loaded over a serial port and executed. The kernel is not currently supported for implementing the core on the basys3.
 
-The kernel can be compiled using the `pycompile.py` script as so: 
+The kernel can be compiled using the `pycompile.py` script as so:
 ```
 ./pycompile.py -s -l kernel.ld -b kboot.S -o kernel kernel.c uart.c utils.c
 ```
 
 Then programs can be compiled for use with the kernel using the `prog.ld` linker script, then loaded onto the core as such:
 ```
-./pycompile.py -s -l prog.ld -o testprog.hex testprog.c uart.c utils.c 
+./pycompile.py -s -l prog.ld -o testprog.hex testprog.c uart.c utils.c
 ./reprogram.py -p <SERIAL PORT> testprog.hex
 ```
 
@@ -257,15 +254,15 @@ Note: disable contrandicting files from the project hierarchy: rv_uart_top.sv, r
 
 
 ->Before synthesizing
-	Load the resulting `kernel.coe` file into the Block RAM IP. 
+	Load the resulting `kernel.coe` file into the Block RAM IP.
 ->Synthesize, Implement and generate bitstream
 ->Load the bit file to the FPGA using hardware manager
 ->After bitstream generation
 	Compile the program you want to load using pycompile normally, then use `reprogram.py` to transmit the hex file to the board.
-	see the help menu for reprogram.py for usage. The default port for usb is /dev/ttyUSB1 and default baudrate is 115200. You can also 		input the usb port and baud rate from the terminal while running the program. The required argument is the hex file of the program you 		want to load to the miniRISC-V core. 
-  
+	see the help menu for reprogram.py for usage. The default port for usb is /dev/ttyUSB1 and default baudrate is 115200. You can also 		input the usb port and baud rate from the terminal while running the program. The required argument is the hex file of the program you 		want to load to the miniRISC-V core.
+
 Testing print() on 7 seg display:
-Function Mode: 
+Function Mode:
 debug switch (SW 15) -> OFF
 Prog  switch (SW 14) -> OFF
 Printed out integers can be seen on the 7 seg display. The debug_input[4:0] signal can be used to display printed value according to their order in the code e.g. debug_input=5'b00000 shows the most recent printed value, 5'b00001 shows the second most recent printed value and so on.
@@ -284,4 +281,4 @@ Loaded instructions can be seen on the 7 seg display. The debug_input[4:0] signa
 
 
 UART test:
-For a quick test of the UART interface, there is a c code named uartTest.c and python application named pyterminal.py. The c code simply reads a byte from the uart receiver and writes back to the transmitter. You have to program the core with uartTest.hex using reprogram.py. On the PC end, run the pyterminal.py. It will asks user to input a character and then echo back the character sent by the uartTest.c program in the miniRISC-V core.  
+For a quick test of the UART interface, there is a c code named uartTest.c and python application named pyterminal.py. The c code simply reads a byte from the uart receiver and writes back to the transmitter. You have to program the core with uartTest.hex using reprogram.py. On the PC end, run the pyterminal.py. It will asks user to input a character and then echo back the character sent by the uartTest.c program in the miniRISC-V core.

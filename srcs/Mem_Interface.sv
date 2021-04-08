@@ -22,21 +22,28 @@ logic [1:0] last_imem_addr, last_mem_addr;
 
 logic [29:0] wraparound_a, wraparound_b;
 
-mem_cell_0 cell0(.clka(clk), .addra(addra0), .dina(dina0),
-	.douta(douta0), .ena(ena[0]), .wea(imem_wen[0]), 
-	.clkb(clk), .addrb(addrb0), .dinb(dinb0), .doutb(doutb0), .enb(enb[0]), .web(mem_wen[0]));
+// Instruction Memory Cells
+imem_cell_0 icell0(.clka(clk), .addra(addra0), .dina(dina0),
+	.douta(douta0), .ena(ena[0]), .wea(imem_wen[0]));
+imem_cell_1 icell1(.clka(clk), .addra(addra1), .dina(dina1),
+	.douta(douta1), .ena(ena[1]), .wea(imem_wen[1]));
+imem_cell_2 icell2(.clka(clk), .addra(addra2), .dina(dina2),
+	.douta(douta2), .ena(ena[2]), .wea(imem_wen[2]));
+imem_cell_3 icell3(.clka(clk), .addra(addra3), .dina(dina3),
+	.douta(douta3), .ena(ena[3]), .wea(imem_wen[3]));
 
-mem_cell_1 cell1(.clka(clk), .addra(addra1), .dina(dina1),
-	.douta(douta1), .ena(ena[1]), .wea(imem_wen[1]), 
-	.clkb(clk), .addrb(addrb1), .dinb(dinb1), .doutb(doutb1), .enb(enb[1]), .web(mem_wen[1]));
-
-mem_cell_2 cell2(.clka(clk), .addra(addra2), .dina(dina2),
-	.douta(douta2), .ena(ena[2]), .wea(imem_wen[2]), 
-	.clkb(clk), .addrb(addrb2), .dinb(dinb2), .doutb(doutb2), .enb(enb[2]), .web(mem_wen[2]));
-
-mem_cell_3 cell3(.clka(clk), .addra(addra3), .dina(dina3),
-	.douta(douta3), .ena(ena[3]), .wea(imem_wen[3]), 
-	.clkb(clk), .addrb(addrb3), .dinb(dinb3), .doutb(doutb3), .enb(enb[3]), .web(mem_wen[3]));
+// Data Memory Cells
+mem_cell_0 cell0(.clka(clk), .addra(addrb0), .dina(dinb0),
+	.douta(doutb0), .ena(enb[0]), .wea(mem_wen[0]));
+mem_cell_1 cell1(.clka(clk), .addra(addrb1), .dina(dinb1),
+	.douta(doutb1), .ena(enb[1]), .wea(mem_wen[1]));
+mem_cell_2 cell2(.clka(clk), .addra(addrb2), .dina(dinb2),
+	.douta(doutb2), .ena(enb[2]), .wea(mem_wen[2]));
+mem_cell_3 cell3(.clka(clk), .addra(addrb3), .dina(dinb3),
+	.douta(doutb3), .ena(enb[3]), .wea(mem_wen[3]));
+//mem_cell_3 cell3(.clka(clk), .addra(addra3), .dina(dina3),
+//	.douta(douta3), .ena(ena[3]), .wea(imem_wen[3]), 
+//	.clkb(clk), .addrb(addrb3), .dinb(dinb3), .doutb(doutb3), .enb(enb[3]), .web(mem_wen[3]));
 
 assign wraparound_a = imem_addr + 4;
 assign ena = imem_en ? 4'b1111 : 4'b0000;
