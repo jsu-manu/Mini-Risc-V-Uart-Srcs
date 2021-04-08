@@ -230,7 +230,8 @@ module CRAS_top #(
     		enc_write_lower: begin
     			if (mem_rdy) begin
     				mem_wr = 1;
-    				mem_din = ct_o[0]; 
+    				mem_din = ct_o[0];
+    				//mem_din = pt_i[1]; 
     				mem_addr = base_addr + cur_addr;
     				next_state = enc_write_upper;
     			end else begin
@@ -240,7 +241,8 @@ module CRAS_top #(
     		enc_write_upper: begin
     			if (mem_rdy) begin
     				mem_wr = 1;
-    				mem_din = ct_o[1]; 
+    				mem_din = ct_o[1];
+    				//mem_din = pt_i[0]; 
     				mem_addr = base_addr + cur_addr; 
     				if (stack_over_thresh) 
     					next_state = enc_pop1;
@@ -294,6 +296,7 @@ module CRAS_top #(
     			//stack_push = 1;
     			stack_push_bot = 1; 
     			stack_din_bot = ct_o[0];
+    			//stack_din_bot = pt_i[1];
     			next_state = dec_push2; 
     		end
     		dec_push2: begin
@@ -301,6 +304,7 @@ module CRAS_top #(
     			//stack_push = 1;
     			stack_push_bot = 1;
     			stack_din_bot = ct_o[1];
+    			//stack_din_bot = pt_i[0];
 //    			next_state = dec_check;
 				next_state = idle;
     		end

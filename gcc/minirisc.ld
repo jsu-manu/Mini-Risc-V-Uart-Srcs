@@ -67,7 +67,7 @@ PHDRS
 SECTIONS
 {
   /* Program code segment, also known as a text segment */
-  .text :
+  .text 0x00000000:
   {
     PROVIDE( _text = ABSOLUTE(.) );
     /* Initialization code segment */
@@ -84,7 +84,7 @@ SECTIONS
   } >ram AT>ram :ram_ro
 
   /* Read-only data segment */
-  .rodata :
+  .rodata 0x00002000:
   {
     *(.rdata)
     *(.rodata .rodata.*)

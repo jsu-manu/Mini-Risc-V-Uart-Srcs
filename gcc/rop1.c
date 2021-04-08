@@ -11,6 +11,7 @@
 #include"CRAS.h"
 // #include<stdio.h> 
 
+extern int _rp0;
 
 void badfunc() {
 	// printf("This is a secret function ;)\n");
@@ -19,20 +20,31 @@ void badfunc() {
 
 }
 
-void vuln_func(int x) {
+
+void vuln_func(int x, int i) {
 	char buf[8];
-	void (*fun_ptr)(void) = &badfunc;
-	print(x); 
-	memcpy(buf + 20, &fun_ptr, sizeof(size_t)); 
+	if (i == 0) {
+		void (*fun_ptr)(void) = &badfunc;
+		print(x); 
+		memcpy(buf + 24, &fun_ptr, sizeof(size_t)); 
+		vuln_func(x, i+1);
+	} else if (i == 64) {
+		volatile int * badptr = (int *)(0x20244);
+		*(badptr) = (int)(&badfunc); 
+		return;
+	} else {
+		vuln_func(x, i+1);
+	}
 	return;
 }
 
 int main(void) {
 	set_CRAS(1);
-	char buf[8]; 
-	void (*fun_ptr)(void) = &badfunc; 
-	print(0x100);
-	memcpy(buf + 20, &fun_ptr, sizeof(size_t));
+	// char buf[8]; 
+	// void (*fun_ptr)(void) = &badfunc; 
+	// print(0x100);
+	// memcpy(buf + 20, &fun_ptr, sizeof(size_t));
+	vuln_func(0x100, 0);
 
 	return 0;
 }
