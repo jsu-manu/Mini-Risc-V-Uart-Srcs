@@ -6,7 +6,7 @@ Disassembly of section .text:
 
 00000000 <_start>:
    0:	00001117          	auipc	sp,0x1
-   4:	0c010113          	addi	sp,sp,192 # 10c0 <_sp0>
+   4:	10010113          	addi	sp,sp,256 # 1100 <_sp0>
    8:	00000097          	auipc	ra,0x0
    c:	00c08093          	addi	ra,ra,12 # 14 <_endloop>
   10:	040000ef          	jal	ra,50 <main>
@@ -20,7 +20,7 @@ Disassembly of section .text:
   20:	03010413          	addi	s0,sp,48
   24:	fca42e23          	sw	a0,-36(s0)
   28:	aaaaa7b7          	lui	a5,0xaaaaa
-  2c:	00878793          	addi	a5,a5,8 # aaaaa008 <_sp0+0xaaaa8f48>
+  2c:	00878793          	addi	a5,a5,8 # aaaaa008 <_sp0+0xaaaa8f08>
   30:	fef42623          	sw	a5,-20(s0)
   34:	fec42783          	lw	a5,-20(s0)
   38:	fdc42703          	lw	a4,-36(s0)
@@ -35,26 +35,28 @@ Disassembly of section .text:
   54:	00112e23          	sw	ra,28(sp)
   58:	00812c23          	sw	s0,24(sp)
   5c:	02010413          	addi	s0,sp,32
-  60:	02000793          	li	a5,32
-  64:	fef42423          	sw	a5,-24(s0)
-  68:	00100793          	li	a5,1
-  6c:	fef42623          	sw	a5,-20(s0)
-  70:	01c0006f          	j	8c <main+0x3c>
-  74:	fec42703          	lw	a4,-20(s0)
-  78:	00070793          	mv	a5,a4
-  7c:	00279793          	slli	a5,a5,0x2
-  80:	00e787b3          	add	a5,a5,a4
-  84:	00179793          	slli	a5,a5,0x1
-  88:	fef42623          	sw	a5,-20(s0)
-  8c:	fe842703          	lw	a4,-24(s0)
-  90:	fec42783          	lw	a5,-20(s0)
-  94:	02f747b3          	div	a5,a4,a5
-  98:	fcf04ee3          	bgtz	a5,74 <main+0x24>
-  9c:	fec42503          	lw	a0,-20(s0)
-  a0:	f79ff0ef          	jal	ra,18 <print>
-  a4:	00000793          	li	a5,0
-  a8:	00078513          	mv	a0,a5
-  ac:	01c12083          	lw	ra,28(sp)
-  b0:	01812403          	lw	s0,24(sp)
-  b4:	02010113          	addi	sp,sp,32
-  b8:	00008067          	ret
+  60:	00400793          	li	a5,4
+  64:	fef42623          	sw	a5,-20(s0)
+  68:	00300793          	li	a5,3
+  6c:	fef42423          	sw	a5,-24(s0)
+  70:	00100793          	li	a5,1
+  74:	fef42223          	sw	a5,-28(s0)
+  78:	fec42703          	lw	a4,-20(s0)
+  7c:	fe842783          	lw	a5,-24(s0)
+  80:	02f74733          	div	a4,a4,a5
+  84:	fe442683          	lw	a3,-28(s0)
+  88:	fe842783          	lw	a5,-24(s0)
+  8c:	02f6c7b3          	div	a5,a3,a5
+  90:	02f707b3          	mul	a5,a4,a5
+  94:	00f05863          	blez	a5,a4 <main+0x54>
+  98:	00f00513          	li	a0,15
+  9c:	f7dff0ef          	jal	ra,18 <print>
+  a0:	00c0006f          	j	ac <main+0x5c>
+  a4:	00a00513          	li	a0,10
+  a8:	f71ff0ef          	jal	ra,18 <print>
+  ac:	00000793          	li	a5,0
+  b0:	00078513          	mv	a0,a5
+  b4:	01c12083          	lw	ra,28(sp)
+  b8:	01812403          	lw	s0,24(sp)
+  bc:	02010113          	addi	sp,sp,32
+  c0:	00008067          	ret

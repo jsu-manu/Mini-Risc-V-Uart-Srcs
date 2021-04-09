@@ -35,22 +35,21 @@ Disassembly of section .text:
   54:	00112e23          	sw	ra,28(sp)
   58:	00812c23          	sw	s0,24(sp)
   5c:	02010413          	addi	s0,sp,32
-  60:	00100793          	li	a5,1
-  64:	fef42623          	sw	a5,-20(s0)
-  68:	00300793          	li	a5,3
-  6c:	fef42423          	sw	a5,-24(s0)
-  70:	fec42703          	lw	a4,-20(s0)
-  74:	fe842783          	lw	a5,-24(s0)
-  78:	02f747b3          	div	a5,a4,a5
-  7c:	00f05863          	blez	a5,8c <main+0x3c>
-  80:	00100513          	li	a0,1
-  84:	f95ff0ef          	jal	ra,18 <print>
-  88:	00c0006f          	j	94 <main+0x44>
-  8c:	00000513          	li	a0,0
-  90:	f89ff0ef          	jal	ra,18 <print>
-  94:	00000793          	li	a5,0
-  98:	00078513          	mv	a0,a5
-  9c:	01c12083          	lw	ra,28(sp)
-  a0:	01812403          	lw	s0,24(sp)
-  a4:	02010113          	addi	sp,sp,32
-  a8:	00008067          	ret
+  60:	fe042623          	sw	zero,-20(s0)
+  64:	00300793          	li	a5,3
+  68:	fef42423          	sw	a5,-24(s0)
+  6c:	fec42703          	lw	a4,-20(s0)
+  70:	fe842783          	lw	a5,-24(s0)
+  74:	02f707b3          	mul	a5,a4,a5
+  78:	00f05863          	blez	a5,88 <main+0x38>
+  7c:	00100513          	li	a0,1
+  80:	f99ff0ef          	jal	ra,18 <print>
+  84:	00c0006f          	j	90 <main+0x40>
+  88:	00000513          	li	a0,0
+  8c:	f8dff0ef          	jal	ra,18 <print>
+  90:	00000793          	li	a5,0
+  94:	00078513          	mv	a0,a5
+  98:	01c12083          	lw	ra,28(sp)
+  9c:	01812403          	lw	s0,24(sp)
+  a0:	02010113          	addi	sp,sp,32
+  a4:	00008067          	ret

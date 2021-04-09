@@ -6,11 +6,12 @@ void print(int a)
 
 int main()
 {
-    int num = 32;
-    int p1 = 1;
+    int num = 4;
+    int p1 = 3;
+    int p2 = 1;
 
-    while ((num / p1) > 0)
-        p1 *= 10;
-
-    print(p1);
+    if ((num / p1) * (p2 / p1) > 0) //  bge x0, rs, offset, meaning branch taken and jump to else.
+        print(15);
+    else
+        print(10);
 }
