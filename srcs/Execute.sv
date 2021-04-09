@@ -74,6 +74,8 @@ module Execute(main_bus bus);
 
   logic        mul_ready_sig;
   logic        div_ready_sig;
+  logic        mul_ready;
+  logic        div_ready;
 
   Forwarding dut
   (
@@ -87,12 +89,16 @@ module Execute(main_bus bus);
     .ID_EX_rs1(bus.ID_EX_rs1),
     .ID_EX_rs2(bus.ID_EX_rs2),
     .alures(bus.EX_MEM_alures),
+    .divres(divres),
+    .mulres(mulres),
     .memres(bus.WB_res),
     .wbres(bus.WB_ID_res),
     .alusrc(bus.ID_EX_alusrc),
     .imm(bus.ID_EX_imm),
     .rs1(bus.ID_EX_dout_rs1),
     .rs2(bus.ID_EX_dout_rs2),
+    .div_ready(div_ready),
+    .mul_ready(mul_ready),
     .fw_rs1(ALUop1),
     .fw_rs2(ALUop2),
     .rs2_mod(rs2_mod)
@@ -164,6 +170,8 @@ module Execute(main_bus bus);
       bus.EX_CSR_write      <= 0;
       bus.EX_MEM_CSR        <= 0;
       bus.EX_MEM_CSR_read   <= 0;
+      div_ready             <= 0;
+      mul_ready             <= 0;
     end
     else if(!bus.dbg && !bus.mem_hold)
     begin
@@ -188,6 +196,8 @@ module Execute(main_bus bus);
       bus.EX_CSR_write      <= bus.ID_EX_CSR_write;
       bus.EX_MEM_CSR        <= bus.ID_EX_CSR;
       bus.EX_MEM_CSR_read   <= bus.ID_EX_CSR_read;
+      div_ready             <= div_ready_sig;
+      mul_ready             <= mul_ready_sig;
     end
   end
   
