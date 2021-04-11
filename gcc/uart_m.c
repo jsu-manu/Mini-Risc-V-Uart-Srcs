@@ -160,7 +160,7 @@ void itoa(int a, char *c)
 
     p1 = 1;
 
-    while (divide(a, p1) > 0)
+    while (a / p1 > 0)
         p1 = (p1 * 10);
 
     p2 = p1 / 10;

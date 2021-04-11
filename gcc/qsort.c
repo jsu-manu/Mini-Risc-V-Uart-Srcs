@@ -1,7 +1,6 @@
 #define INSERTION_THRESHOLD 10
 #define NSTACK 50
 #define DATA_SIZE 4
-#include "print.h"
 #include "uart.h" 
 
 #define SWAP(a, b)            \
@@ -118,12 +117,6 @@ void sort(unsigned int n, int arr[])
             }
         }
     }
-
-    for(i = 0; i < n; i++)
-    {
-        print(arr[i]);
-		uart_write_blocking(h[i]);
-    }
 }
 
 //--------------------------------------------------------------------------
@@ -133,14 +126,14 @@ int main(void)
 {
     unsigned int i = 0;
 
+	uart_init();
+
     int input_data[DATA_SIZE] = {3, 4, 2, 1};
 
     sort(DATA_SIZE, input_data);
-/*
-    for(i = 0; i < DATA_SIZE; i++)
-    {
-        print(input_data[i]);
-    }
-*/
+	
+    int res1 = input_data[0] / input_data[1];
+    int res2 = input_data[2] / input_data[3];
+    
     return 0;
 }
