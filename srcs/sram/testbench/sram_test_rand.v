@@ -55,7 +55,7 @@ sram_compiled_array SRAM_inst ( .dout7(dout[7]), .dout6(dout[6]),
      .sense_en(sense_en_w), .write_en(write_en_w), .clk(clk_w),
      .din7(din_w[7]), .din6(din_w[6]), .din5(din_w[5]), .din4(din_w[4]),
      .din3(din_w[3]), .din2(din_w[2]), .din1(din_w[1]), .din0(din_w[0]),
-     .addr11(addr_w[11]), .addr10(addr_w[10]), .addr9(addr_w[9]),
+     .addr10(addr_w[10]), .addr9(addr_w[9]),
      .addr8(addr_w[8]), .addr7(addr_w[7]), .addr6(addr_w[6]),
      .addr5(addr_w[5]), .addr4(addr_w[4]), .addr3(addr_w[3]),
      .addr2(addr_w[2]), .addr1(addr_w[1]), .addr0(addr_w[0]));
