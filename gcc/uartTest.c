@@ -1,19 +1,21 @@
 #include"uart.h" 
 // #include"print.h" 
 #include"utils.h"
+// #include"print.h"
 
 int main(void) {
 	uart_init(); 
 
-	char h[] = "Hello, world!\r\n"; 
-	// // int strlen = 13; 
-	uart_print(h);
+	// char h[] = "Hello, world!\r\n"; 
+	// // // int strlen = 13; 
+	// uart_print(h);
+	// print('a');
 	
-	char numchar[12];
-	int num = 32; 
+	// char numchar[12];
+	// int num = 32; 
 
-	itoa(num, numchar);
-	uart_print(numchar);
+	// itoa(num, numchar);
+	// uart_print(numchar);
 
 	char c; 
 	while(1) {

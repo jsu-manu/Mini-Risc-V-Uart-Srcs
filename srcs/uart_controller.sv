@@ -21,7 +21,8 @@
 
 
 module uart_controller(
-    mmio_bus mbus
+    mmio_bus mbus,
+    riscv_bus rbus
 //    input logic clk, rst, rx, rx_ren, tx_wen,
 //    input logic [7:0] din,
 //    output logic tx, rx_data_present,
@@ -46,12 +47,36 @@ module uart_controller(
         ADD = mbus.uart_addr;
         mbus.tx = sTX; 
         mbus.uart_dout = RD;
+        rbus.uart_IRQ = IRQ;
     end
+    
+    enum {idle, intr_pend} state;
     
     gh_uart_16550 u0(.clk(clk), .BR_clk(BR_clk), .rst(rst), .CS(CS), .WR(WR),
         .ADD(ADD), .D(D), .sRX(sRX), .CTSn(1'b1), .DSRn(1'b1), .RIn(1'b1), 
         .DCDn(1'b1), .sTX(sTX), .DTRn(DTRn), .RTSn(RTSn), .OUT1n(OUT1n), .OUT2n(OUT2n), 
         .TXRDYn(TXRDYn), .RXRDYn(RXRDYn), .IRQ(IRQ), .B_CLK(B_CLK), .RD(RD));
+        
+        
+//    always_ff @(posedge clk or posedge IRQ) begin
+//    	if (rst) begin
+//    		state <= idle;
+//    		rbus.uart_IRQ <= 0;
+//    	end else begin
+//			case (state) 
+//				idle: begin
+//					if (IRQ) begin
+//						rbus.uart_IRQ <= 1; 
+//						state <= intr_pend;
+//					end
+//				end
+//				intr_pend: begin
+//					rbus.uart_IRQ <= 0; 
+//					if (~IRQ) state <= idle;
+//				end
+//			endcase
+//    	end
+//    end 
     
     /*logic clk, rst, rx, rx_ren, tx_wen;
     logic [7:0] din;

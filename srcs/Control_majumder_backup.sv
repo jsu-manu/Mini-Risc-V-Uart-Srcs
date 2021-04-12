@@ -42,14 +42,18 @@
 
 
 module Control
- (input  logic [6:0] opcode,
+ (input  logic       clk,
+  input  logic [6:0] opcode,
   input  logic [2:0] funct3,
   input  logic [6:0] funct7,
+  input  logic [11:0] funct12,
   input  logic ins_zero,
   input  logic flush,
   input  logic hazard,
   input  logic [4:0] rs1,rd,
   output logic [2:0]alusel,
+  output logic [2:0]mulsel,
+  output logic [2:0]divsel,
   output logic [2:0]storecntrl, //sw,sh,sb
   output logic [4:0]loadcntrl, //lhu,lbu,lw,lh,lb
   output logic [3:0]cmpcntrl, //slt,slti,sltu,sltiu
@@ -72,7 +76,10 @@ module Control
   output logic      illegal_ins, 
   output logic [2:0] csrsel, 
   output logic      csrwrite, 
-  output logic      csrread);
+  output logic      csrread,
+  output logic      trap_ret,
+  output logic      mul_inst,
+  output logic      div_inst);
 
   // intruction classification signal
   
@@ -80,6 +87,8 @@ module Control
 
   always_comb begin
     alusel=3'b000;
+    mulsel=3'b000;
+    divsel=3'b000;
     storecntrl=3'b000;
     loadcntrl=5'b00000;
     cmpcntrl=2'b00;
@@ -90,20 +99,22 @@ module Control
     bge=1'b0;
     bltu=1'b0;
     bgeu=1'b0;
-	memread=1'b0;
-	memwrite=1'b0;
-	regwrite=1'b0;
-	alusrc=1'b0;
-	compare=1'b0;
-	auipc=1'b0;
-	lui=1'b0;
-	jal=1'b0;
-	jalr=1'b0;
-	illegal_ins=1'b0;
-	csrsel = 3'b000;
-	csrwrite = 1'b0;
-	csrread = 0;
-  
+    memread=1'b0;
+    memwrite=1'b0;
+    regwrite=1'b0;
+    alusrc=1'b0;
+    compare=1'b0;
+    auipc=1'b0;
+    lui=1'b0;
+    jal=1'b0;
+    jalr=1'b0;
+    illegal_ins=1'b0;
+    csrsel = 3'b000;
+    csrwrite = 1'b0;
+    csrread = 0;
+  	trap_ret = 0;
+    mul_inst=1'b0;
+    div_inst=1'b0;
     unique case (opcode)
       7'b0000011:               // load
         begin
@@ -161,11 +172,59 @@ module Control
 			{7'h00,3'b111}:
 				//and
 				alusel=3'b010;
-		    default:
-		      illegal_ins=1'b1;				
-            endcase
-        end		
-      7'b0010011:               // I-arith
+			{7'h01,3'b000}:
+        //mul
+      begin
+        mulsel   = 3'b001;
+        mul_inst = 1'b1;
+      end
+			{7'h01,3'b001}:
+        //mulh
+      begin
+        mulsel   = 3'b010;
+        mul_inst = 1'b1;
+      end
+			{7'h01,3'b010}:
+        //mulhsu
+      begin
+        mulsel   = 3'b011;
+        mul_inst = 1'b1;
+      end
+			{7'h01,3'b011}:
+        //mulhu
+      begin
+        mulsel   = 3'b100;
+        mul_inst = 1'b1;
+      end
+			{7'h01,3'b100}:
+        //div
+      begin
+        divsel   = 3'b001;
+        div_inst = 1'b1;
+      end
+			{7'h01,3'b101}:
+        //divu
+      begin
+        divsel   = 3'b010;
+        div_inst = 1'b1;
+      end
+			{7'h01,3'b110}:
+        //rem
+      begin
+        divsel   = 3'b011;
+        div_inst = 1'b1;
+      end
+			{7'h01,3'b111}:
+        //remu
+      begin
+        divsel   = 3'b100;
+        div_inst = 1'b1;
+      end
+		  default:
+		    illegal_ins=1'b1;				
+      endcase
+    end		
+    7'b0010011:               // I-arith
 		begin
 		regwrite=(!stall)&&(1'b1);
         alusrc=1'b1;
@@ -263,6 +322,11 @@ module Control
 //            csrwrite = ~stall;
 //            csrread = ~stall;
             unique case(funct3) 
+            	3'b000: begin //MRET/SRET/URET
+            		if (funct12 == 12'h302) begin //MRET
+            			trap_ret = 1; 
+            		end
+            	end
                 3'b001: begin //CSRRW
 //                regwrite=stall ? 1'b0: 1'b1;
                     regwrite = (rd == 0) ? 1'b0 : ~stall;

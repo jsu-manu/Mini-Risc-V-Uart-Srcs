@@ -1,5 +1,4 @@
-#include"print.h" 
-
+#include"print.h"
 
 void printl(int l[], int llen) {
 	int i = 0; 
@@ -26,7 +25,6 @@ int main(void) {
 		}
 	}
 	printl(l, llen);
-	while(1);
 	return 0;
 
 }

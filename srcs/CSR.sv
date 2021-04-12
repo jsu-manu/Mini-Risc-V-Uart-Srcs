@@ -18,116 +18,113 @@ module CSR (
         bus.IF_ID_CSR = dout;
     end
     
-    enum logic[11:0] {
-        mstatus     = 12'h300, 
-        misa        = 12'h301,
-        mie         = 12'h304,
-        mtvec       = 12'h305, 
+//    enum logic[11:0] {
+//        mstatus     = 12'h300, 
+//        misa        = 12'h301,
+//        mie         = 12'h304,
+//        mtvec       = 12'h305, 
         
-        mscratch    = 12'h340,
-        mepc        = 12'h341, 
-        mcause      = 12'h342, 
-        mtval       = 12'h343, 
-        mip         = 12'h344
-        } csr_list;
-    
-    logic [31:0] csr [logic [11:0]];
-//    csr_listings cidx;
-    
-    initial begin
-        csr_list = csr_list.first; 
-        do begin
-            csr[csr_list] = 32'h0;
-            csr_list = csr_list.next; 
-        end while (csr_list != csr_list.first);
+//        mscratch    = 12'h340,
+//        mepc        = 12'h341, 
+//        mcause      = 12'h342, 
+//        mtval       = 12'h343, 
+//        mip         = 12'h344
+//        } csr_list;
         
-        csr[misa] = 32'h40000100;
-        
-//        foreach (csr[i]) begin
-//            $display("csr[%0x] = %0x", i , csr[i]);
-//        end
-    end
-    
-    //Right now, only possible mcause is built from ra stack trap
+//	logic [31:0] csr[256];
+	
+	logic [31:0] mstatus, misa, mie, mtvec, mscratch, mepc, mcause, mtval, mip; 
+
     function logic[31:0] build_mcause();
     begin
-        return {1'b0, bus.stack_mismatch, 30'h0};
+//        return {1'b0, bus.uart_IRQ, 30'h0};
+		if (bus.ecall) return {1'b1, 31'h3};
+		else if (bus.uart_IRQ) return 31;
     end
     endfunction
     
     always_comb begin
-        if (csr.exists(r_addr)) begin
-            dout <= csr[r_addr];
-        end else begin
-            dout <= 32'h0; 
-        end
-        bus.mtvec <= csr[mtvec];
+
+//		dout = csr[r_addr[7:0]];
+//        bus.mtvec = csr[5];
+		bus.mtvec = mtvec;
+		bus.mepc = mepc;
+//        bus.mepc = csr[8'h41];
+        
+        case (r_addr[11:0])
+        	12'h300: dout = mstatus; 
+        	12'h301: dout = misa;
+        	12'h304: dout = mie; 
+        	12'h305: dout = mtvec;
+        	12'h340: dout = mscratch; 
+        	12'h341: dout = mepc; 
+        	12'h342: dout = mcause;
+        	12'h343: dout = mtval;
+        	12'h344: dout = mip;
+        	default: dout = 0; 
+        endcase
     end
     
-    event triggered;
+//    event triggered;
     
-    always_ff @(posedge clk) begin
+    
+    always_ff @(posedge clk or posedge bus.trigger_trap) begin
         if (rst) begin
-        
+            mie <= 0;
+            mtvec <= 0;
+            mepc <= 0;
+            mcause <= 0;
         end else begin
-            if (bus.trap) begin
-               csr[mepc] <= bus.IF_ID_pres_addr; 
-               ->triggered;
+            if (bus.trigger_trap) begin
+//               csr[mepc] <= bus.IF_ID_pres_addr; 
+//               ->triggered;
+//				bus.trap <= 0;
 //               csr[mcause] <= build_mcause();
 //               triggerTrap();
-            end else begin
-//                if (bus.ecall) triggerTrap();
+//				csr[8'h41] <= bus.IF_ID_pres_addr; 
+//				csr[8'h42] <= build_mcause(); 
+				mepc <= bus.ID_EX_pres_addr;
+				mcause <= build_mcause(); 
+			
+            end
+
                 if (wea) begin
-                    if (csr.exists(w_addr))
-                        csr[w_addr] <= din;
-                end
+//						csr[w_addr[7:0]] <= din;
+					case(w_addr[11:0])
+						12'h300: mstatus <= din;
+						12'h301: misa <= din;
+						12'h304: mie <= din;
+						12'h305: mtvec <= din;
+						12'h340: mscratch <= din;
+						12'h341: mepc <= din;
+						12'h342: mcause <= din;
+						12'h343: mtval <= din;
+						12'h344: mip <= din;
+					default:;
+					endcase
             end
         end
     end
     
-    always @(posedge bus.stack_mismatch) begin
-        triggerTrap();
-    end
+//    always @(posedge bus.stack_mismatch) begin
+//        triggerTrap();
+//    end
     
-    always @(posedge bus.ecall) triggerTrap();
+//    always @(posedge bus.ecall) triggerTrap();
     
 
     
-    task triggerTrap();
-    begin
-        
-        csr[mcause] <= build_mcause();
-        bus.trap = 1;
-        
-        @ (triggered); 
-        bus.trap = 0;
-    end
-    endtask
-    
-    
-//    always_comb begin
-//        bus.csr = csr;
-//    end
-    
-    
-//    logic [31:0] csr_reg [4095:0];
-    
-//    always_comb begin
-//        clk = bus.clk; 
-//        wea = bus.MEM_WB_CSR_write;
-//        r_addr = bus.IF_ID_CSR_addr; 
-//        w_addr = bus.MEM_WB_CSR_addr;
-//        din = bus.WB_CSR_res;
-//        bus.IF_ID_CSR_dout = dout;
-//    end
-    
-//    assign dout = csr_reg[r_addr];
-    
-//    always_ff @(posedge clk) begin
-//        if (wea == 1) begin
-//            csr_reg[w_addr] = din;
+//    task triggerTrap();
+//    begin
+//        if (~bus.trapping) begin
+////        csr[mcause] <= build_mcause();
+//			csr[12'h41] <= bus.IF_ID_pres_addr;
+//			csr[12'h42] <= build_mcause();
+//			bus.trap <= 1;
 //        end
-        
+////        @ (triggered); 
+////        bus.trap = 0;
 //    end
+//    endtask
 
 endmodule : CSR

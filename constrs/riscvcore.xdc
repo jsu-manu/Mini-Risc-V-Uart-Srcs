@@ -22,6 +22,13 @@ set_property PACKAGE_PIN V10 [get_ports addr_dn]
 set_property IOSTANDARD LVCMOS33 [get_ports clk_out]
 set_property PACKAGE_PIN B13 [get_ports clk_out]
 
+set_property IOSTANDARD LVCMOS33 [get_ports mosi]
+set_property IOSTANDARD LVCMOS33 [get_ports miso]
+set_property IOSTANDARD LVCMOS33 [get_ports cs]
+set_property PACKAGE_PIN K17 [get_ports mosi]
+set_property PACKAGE_PIN K18 [get_ports miso] 
+set_property PACKAGE_PIN L13 [get_ports cs] 
+
 ## Switches
 ##Bank = 34, Pin name = IO_L21P_T3_DQS_34,					Sch name = SW0
 set_property PACKAGE_PIN U9 [get_ports {debug_input[0]}]

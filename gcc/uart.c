@@ -1,5 +1,4 @@
 #include "uart.h"
-#include "utils.h"
 
 #define INT_OFFSET 48
 
@@ -8,14 +7,14 @@ char uart_init() {
 	//set LCR 
 	*(base_ptr + 3) = (1 << 7) | (3);
 	//set baud rate divisor 
-	char baud_lower = 54; 
+	char baud_lower = 54;//2;//54; 
 	*(base_ptr) = baud_lower; 
 	*(base_ptr + 1) = 0;
 	//reset LCR 
 	*(base_ptr + 3) = 3; 
 	//set FCR 
 	*(base_ptr + 2) = 1; 
-	//set IER
+	// //set IER
 	*(base_ptr + 1) = 1; 
 	return 1; 
 }
@@ -28,7 +27,7 @@ void uart_put(char c) {
 void uart_put_blocking(char c) {
 	char s;
 	do {
-		s = uart_poll() & 64;
+		s = uart_poll() & 96;
 	} while (s == 0);
 	uart_put(c);
 }
@@ -69,7 +68,10 @@ void uart_print(char c[])
 	int offset = 0;
 	while(*(ptr + offset) != '\0') {
 		// uart_write_blocking(*(ptr + offset));
-		uart_put_blocking(*(ptr + offset));
+		if (offset == 0)
+			uart_put_blocking(*(ptr + offset));
+		else
+			uart_put(*(ptr + offset));
 		offset++;
 	}
 
@@ -131,7 +133,7 @@ int atoi(char *c)
 		}
 		else if ((tmp >= 0) && (tmp <= 9))
 		{
-			sum += multiply(tmp, mult);
+			sum += tmp * mult;
 		}
 		else
 			return -1;
@@ -162,21 +164,21 @@ void itoa(int a, char *c)
 
 	p1 = 1;
 
-	while (divide(a, p1) > 0)
-		p1 = multiply(p1, 10);
+	while (a / p1 > 0)
+		p1 = p1 * 10;
 
-	p2 = divide(p1, 10);
+	p2 = p1 / 10;
 
 	while (1)
 	{
-		int tmp = divide(modulo(a, p1), p2);
+		int tmp = (a % p1) / p2;
 		c[idx] = tmp + INT_OFFSET;
 		idx++;
 
 		if ((p2 == 1) || (idx == 12))
 			return;
 
-		p2 = divide(p2, 10);
-		p1 = divide(p1, 10);
+		p2 = p2 / 10;
+		p1 = p1 / 10;
 	}
 }

@@ -46,7 +46,7 @@ module Regfile(main_bus bus);
   always_ff @(posedge bus.clk)begin
     if(bus.Rst)
         regdata[2] <= 1020;
-    if(wen)
+    if(wen && ~bus.mem_hold)
       regdata[bus.MEM_WB_rd] <= bus.WB_res;
     if (bus.photon_regwrite)
       regdata[bus.addr_corereg_photon] <= bus.photon_data_out;
@@ -55,10 +55,11 @@ module Regfile(main_bus bus);
     integer i;
     initial begin
       for(i=0; i<32 ;i=i+1)begin
-        if (i == 2)
-            regdata[i] = 511; 
-        else
-            regdata[i] = $random;
+      	regdata[i] = 0;
+//        if (i == 2)
+//            regdata[i] = 511; 
+//        else
+//            regdata[i] = $random;
       end
         end
       `endif

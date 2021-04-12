@@ -13,8 +13,14 @@
 // }
 
 void print(int a) {
-    volatile int * p = (int *)0xaaaaa008;
-    *p = a;
+    // volatile int * p = (int *)0xaaaaa008;
+    // *p = a;
+    int addr = 0;
+    __asm__("li  %[b], 0\n\t"
+            "lui %[b], 699050\n\t"
+            "sw %[a],8(%[b])"
+            : : [a] "r" (a), [b] "r" (addr)
+        );
 }
 
 /*

@@ -57,7 +57,7 @@
 
 module Decode(main_bus bus);
  
-logic IF_ID_lui;
+logic IF_ID_lui, lui;
 logic ID_EX_memread_sig, ID_EX_regwrite_sig;
 //logic[4:0] ID_EX_rd_sig;
 
@@ -70,10 +70,16 @@ logic flush_sig;
 logic [31:0]rs1_mod,rs2_mod;
 
 //logic jal,jalr;
+logic [1:0] funct2;
 logic [2:0]funct3;
+logic [3:0] funct4;
+logic [5:0] funct6;
 logic [6:0]funct7;
+logic [11:0] funct12;
+logic [31:0] comp_imm;
 
 logic IF_ID_jal, IF_ID_compare;
+logic jal, compare, jalr_sig;
 logic IF_ID_jalr_sig;
 
 //hazard detection and compare unit
@@ -84,11 +90,14 @@ logic [4:0]IF_ID_rd;
 logic [31:0]dout_rs1,dout_rs2;
 
 //control
-logic [2:0]IF_ID_alusel;
-logic      IF_ID_branch;
+logic [2:0]IF_ID_alusel, alusel;
+logic [2:0]IF_ID_mulsel;
+logic [2:0]IF_ID_divsel;
+logic      IF_ID_branch, branch;
 logic      IF_ID_memwrite,IF_ID_memread,IF_ID_regwrite,IF_ID_alusrc;
-logic [2:0]IF_ID_storecntrl;
-logic [4:0]IF_ID_loadcntrl;
+logic memwrite, memread, regwrite, alusrc;
+logic [2:0]IF_ID_storecntrl, storecntrl;
+logic [4:0]IF_ID_loadcntrl, loadcntrl;
 logic [3:0]IF_ID_cmpcntrl;
 logic      IF_ID_auipc;
 
@@ -98,57 +107,162 @@ logic csrread;
 logic [11:0] IF_ID_CSR_addr;
 
 //imm gen
-logic [31:0]imm;
+logic [31:0]imm, IF_ID_imm;
 logic hz_sig;
 logic branch_taken_sig;
+logic div_ready_sig;
+logic div_ready;
+logic mul_ready_sig;
+logic mul_ready;
+
+
+//Compressed signals
+logic [4:0] c_rd, c_rs1, c_rs2;
+logic [1:0] c_funct2;
+logic [2:0] c_funct3;
+logic [3:0] c_funct4;
+logic [5:0] c_funct6;
+logic [6:0] c_funct7; 
+logic [2:0] c_alusel; 
+logic [2:0] c_storecntrl;
+logic [4:0] c_loadcntrl;
+logic c_branch, c_beq, c_bne, c_memread, c_memwrite, c_regwrite, c_alusrc, c_compare;
+logic c_lui, c_jal, c_jalr;
+logic [31:0] c_imm;
+
+logic trap_ret;
+
+logic mul_inst;
+logic div_inst;
 
 //separating different field of instruction
-assign funct3=bus.ins[14:12];
-assign funct7=bus.ins[31:25];
-assign bus.IF_ID_rs1=bus.ins[19:15];
-assign bus.IF_ID_rs2=bus.ins[24:20];
-assign IF_ID_rd=bus.ins[11:7];
-assign bus.IF_ID_rd=IF_ID_rd;
+//assign funct3=bus.ins[14:12];
+//assign funct7=bus.ins[31:25];
+//assign bus.IF_ID_rs1=bus.ins[19:15];
+//assign bus.IF_ID_rs2=bus.ins[24:20];
+//assign IF_ID_rd=bus.ins[11:7];
+//assign bus.IF_ID_rd=IF_ID_rd;
+
+function logic [4:0] RVC_Reg(input logic [2:0] rs);
+	case (rs)
+		3'b000: return 8;
+		3'b001: return 9;
+		3'b010: return 10;
+		3'b011: return 11;
+		3'b100: return 12; 
+		3'b101: return 13;
+		3'b110: return 14;
+		3'b111: return 15;
+	endcase
+endfunction
 
 assign IF_ID_CSR_addr = bus.ins[31:20];
 assign bus.IF_ID_CSR_addr = IF_ID_CSR_addr;
+
+always_comb begin
+	if (bus.comp_sig) begin
+		funct2 = c_funct2;
+		funct3 = c_funct3;
+		funct4 = c_funct4;
+		funct6 = c_funct6;
+		funct7 = c_funct7; 
+		bus.IF_ID_rs1 = c_rs1;
+		bus.IF_ID_rs2 = c_rs2;
+		IF_ID_rd = c_rd;
+		bus.IF_ID_rd = IF_ID_rd; 
+		IF_ID_alusel = c_alusel;
+		IF_ID_storecntrl=c_storecntrl;
+		IF_ID_loadcntrl = c_loadcntrl; 
+		IF_ID_branch = c_branch;
+		IF_ID_memread = c_memread;
+		IF_ID_memwrite = c_memwrite;
+		IF_ID_regwrite = c_regwrite;
+		IF_ID_alusrc = c_alusrc; 
+		IF_ID_compare = c_compare;
+		IF_ID_lui = c_lui;
+		IF_ID_jal = c_jal;
+		IF_ID_jalr_sig = c_jalr;
+		IF_ID_imm = c_imm;
+	end else begin
+		funct3=bus.ins[14:12];
+		funct7=bus.ins[31:25];
+		funct12 = bus.ins[31:20];
+		bus.IF_ID_rs1 = bus.ins[19:15];
+		bus.IF_ID_rs2 = bus.ins[24:20]; 
+		IF_ID_rd=bus.ins[11:7];
+		bus.IF_ID_rd=IF_ID_rd;
+		IF_ID_alusel=alusel;
+		IF_ID_storecntrl=storecntrl;
+		IF_ID_loadcntrl=loadcntrl;
+		IF_ID_branch=branch;
+		IF_ID_memread = memread;
+		IF_ID_memwrite=memwrite;
+		IF_ID_regwrite=regwrite;
+		IF_ID_alusrc=alusrc;
+		IF_ID_compare=compare;
+		IF_ID_lui=lui;
+		IF_ID_jal=jal;
+		IF_ID_jalr_sig=jalr_sig;
+		IF_ID_imm = imm;
+	end
+end
 
 //assign flush=branch_taken_sig;
 //assign debug_out=debug;
 assign bus.branch=branch_taken_sig;
 assign ins_zero=!(|bus.ins);
-assign bus.hz=hz_sig;
-assign bus.ecall = (bus.ins == 32'b00000000000000000000000001110011);
+assign bus.hz=hz_sig || (mul_inst && !bus.mul_ready) || (div_inst && !bus.div_ready);
+assign bus.ecall = flush ? 1'b0 : (bus.ins == 32'b00000000000000000000000001110011);
+//assign bus.trap_ret = trap_ret;
+   
    
    
    //control signal generation
    Control u1(
+       .clk(bus.clk),
        .opcode(bus.ins[6:0]),
        .funct3(funct3),
        .funct7(funct7),
+       .funct12(funct12),
        .ins_zero(ins_zero),
        .flush(flush),
        .hazard(hz_sig),
        .rs1(bus.ins[19:15]),
        .rd(bus.ins[11:7]), 
-       .alusel(IF_ID_alusel),
-       .branch(IF_ID_branch),
-       .memwrite(IF_ID_memwrite),
-       .memread(IF_ID_memread),
-       .regwrite(IF_ID_regwrite),
-       .alusrc(IF_ID_alusrc),
-       .compare(IF_ID_compare),
-       .lui(IF_ID_lui),
+       .alusel(alusel),
+       .mulsel(IF_ID_mulsel),
+       .divsel(IF_ID_divsel),
+       .branch(branch),
+       .memwrite(memwrite),
+       .memread(memread),
+       .regwrite(regwrite),
+       .alusrc(alusrc),
+       .compare(compare),
+       .lui(lui),
        .auipc(IF_ID_auipc),
-       .jal(IF_ID_jal),
-       .jalr(IF_ID_jalr_sig),
-       .storecntrl(IF_ID_storecntrl),
-       .loadcntrl(IF_ID_loadcntrl),
+       .jal(jal),
+       .jalr(jalr_sig),
+       .storecntrl(storecntrl),
+       .loadcntrl(loadcntrl),
        .cmpcntrl(IF_ID_cmpcntrl), 
        .csrsel(csrsel), 
        .csrwrite(csrwrite),
-       .csrread(csrread)
+       .csrread(csrread),
+       .trap_ret(trap_ret),
+       .mul_inst(mul_inst),
+       .div_inst(div_inst)
    );
+   
+   Compressed_Control u7(
+    	.ins(bus.ins), .ins_zero(ins_zero), .flush(flush), .hazard(hz_sig), 
+    	.rd(c_rd), .rs1(c_rs1), .rs2(c_rs2), .funct2(c_funct2), .funct3(c_funct3), 
+    	.funct4(c_funct4), .funct6(c_funct6), .funct7(c_funct7), .alusel(c_alusel), 
+    	.storecntrl(c_storecntrl), .loadcntrl(c_loadcntrl), .branch(c_branch), .beq(c_beq),
+    	.bne(c_bne), .memread(c_memread), .memwrite(c_memwrite), .regwrite(c_regwrite),
+    	.alusrc(c_alusrc), .compare(c_compare), .lui(c_lui), .jal(c_jal), 
+    	.jalr(c_jalr), .imm(c_imm)
+   );
+   
    //branchforward
    branchforward u0(
        .rs1(bus.IF_ID_dout_rs1),
@@ -158,12 +272,16 @@ assign bus.ecall = (bus.ins == 32'b00000000000000000000000001110011);
        .zeroa(zeroa),
        .zerob(zerob),
        .alusrc(IF_ID_alusrc),
-       .imm(imm),
+       .imm(IF_ID_imm),
        .alures(bus.EX_MEM_alures),
        .wbres(bus.WB_res),
+       .divres(bus.EX_MEM_divres),
+       .mulres(bus.EX_MEM_mulres),
        .EX_MEM_regwrite(bus.EX_MEM_regwrite),
        .EX_MEM_memread(bus.EX_MEM_memread),
        .MEM_WB_regwrite(bus.MEM_WB_regwrite),
+       .div_ready(div_ready_sig),
+       .mul_ready(mul_ready_sig),
        .rs1_mod(rs1_mod),
        .rs2_mod(rs2_mod)
        );
@@ -197,6 +315,8 @@ assign bus.ecall = (bus.ins == 32'b00000000000000000000000001110011);
    Branoffgen u4(
        .ins(bus.ins),
        .rs1_mod(rs1_mod),
+       .comp_sig(bus.comp_sig),
+       .comp_imm(c_imm),
        .jal(IF_ID_jal),
        .jalr(IF_ID_jalr_sig),
        .branoff(bus.branoff)
@@ -222,9 +342,14 @@ assign bus.ecall = (bus.ins == 32'b00000000000000000000000001110011);
         .zerob(zerob)
    ); 
    
+   //Compressed Instruction Control Unit
+   
+   
    always_ff @(posedge bus.clk)begin
         if(bus.Rst)begin
             bus.ID_EX_alusel<=3'h0;
+            bus.ID_EX_mulsel<=3'h0;
+            bus.ID_EX_divsel<=3'h0;
             bus.ID_EX_alusrc<=1'b0;
             ID_EX_memread_sig<=1'b0;
             bus.ID_EX_memwrite<=1'b0;
@@ -250,10 +375,16 @@ assign bus.ecall = (bus.ins == 32'b00000000000000000000000001110011);
             bus.ID_EX_CSR_write <= 1'b0;
             bus.csrsel <= 3'b000;
             bus.ID_EX_CSR_read <= 0;
+            bus.ID_EX_comp_sig <= 0;
+            bus.trap_ret <= 0;
+            div_ready_sig<=0;
+            mul_ready_sig<=0;
             end
         else if(!bus.dbg && !bus.mem_hold) begin
-            if (!hz_sig) begin
+            if ((!hz_sig) & bus.RAS_rdy) begin
                 bus.ID_EX_alusel<=IF_ID_alusel;
+                bus.ID_EX_mulsel<=IF_ID_mulsel;
+                bus.ID_EX_divsel<=IF_ID_divsel;
                 bus.ID_EX_alusrc<=IF_ID_alusrc;
                 ID_EX_memread_sig<=IF_ID_memread;
                 bus.ID_EX_memwrite<=IF_ID_memwrite;
@@ -268,9 +399,9 @@ assign bus.ecall = (bus.ins == 32'b00000000000000000000000001110011);
                 bus.ID_EX_compare<=IF_ID_compare;
                 bus.ID_EX_dout_rs1<=bus.IF_ID_dout_rs1;
                 bus.ID_EX_dout_rs2<=bus.IF_ID_dout_rs2;
-                bus.ID_EX_imm<=imm;
+                bus.ID_EX_imm<=IF_ID_imm;
                 bus.ID_EX_pres_addr<=bus.IF_ID_pres_addr;
-                flush_sig<=branch_taken_sig | bus.trap;
+                flush_sig<=branch_taken_sig;// | bus.trap_ret;// | bus.trigger_trap;
                 bus.ID_EX_jal<=IF_ID_jal;
                 bus.ID_EX_jalr<=IF_ID_jalr_sig;
                 bus.ID_EX_lui<=IF_ID_lui;
@@ -280,6 +411,10 @@ assign bus.ecall = (bus.ins == 32'b00000000000000000000000001110011);
                 bus.ID_EX_CSR_write <= csrwrite;
                 bus.csrsel <= csrsel;
                 bus.ID_EX_CSR_read <= csrread;
+                bus.ID_EX_comp_sig <= bus.comp_sig;
+                bus.trap_ret <= trap_ret;
+                div_ready_sig<=bus.div_ready;
+                mul_ready_sig<=bus.mul_ready;
             end else begin
                 bus.ID_EX_alusel<=3'b000;
                 bus.ID_EX_alusrc<=1'b1;
@@ -308,6 +443,10 @@ assign bus.ecall = (bus.ins == 32'b00000000000000000000000001110011);
                 bus.ID_EX_CSR_write <= 1'b0;
                 bus.csrsel <= 3'b000;
                 bus.ID_EX_CSR_read <= 0;
+                bus.ID_EX_comp_sig <= bus.comp_sig;
+                bus.trap_ret <= 0;
+                div_ready_sig<=div_ready;
+                mul_ready_sig<=mul_ready;
             end
         end
     end
@@ -315,7 +454,9 @@ assign bus.ecall = (bus.ins == 32'b00000000000000000000000001110011);
     assign bus.ID_EX_memread=ID_EX_memread_sig;
     assign bus.ID_EX_regwrite=ID_EX_regwrite_sig;
    // assign ID_EX_rd=ID_EX_rd_sig;
-    assign flush=flush_sig;
+    assign flush=flush_sig | bus.trigger_trap | bus.trap_ret;
     assign bus.IF_ID_jalr=IF_ID_jalr_sig;
     assign bus.IF_ID_jal = IF_ID_jal;
+    assign div_ready=div_ready_sig;
+    assign mul_ready=mul_ready_sig;
 endmodule

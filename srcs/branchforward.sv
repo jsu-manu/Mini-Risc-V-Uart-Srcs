@@ -42,33 +42,47 @@ module branchforward
   input  logic [31:0] imm,
   input  logic [31:0] alures,
   input  logic [31:0] wbres,
+  input  logic [31:0] divres,
+  input  logic [31:0] mulres,
   input  logic        EX_MEM_regwrite,
   input  logic        MEM_WB_regwrite,
   input  logic        EX_MEM_memread,
+  input  logic        div_ready,
+  input  logic        mul_ready,
   output logic [31:0] rs1_mod,
   output logic [31:0] rs2_mod);
   
-  logic [1:0] sel1, sel2;
+  logic [2:0] sel1, sel2;
   
   
-  assign sel1 = (zero3 && EX_MEM_regwrite && (!EX_MEM_memread)) ? 2'b00 : (zeroa && MEM_WB_regwrite) ? 2'b01 : 2'b11;
-  assign sel2 = (zero4 && EX_MEM_regwrite && (!EX_MEM_memread)) ? 2'b00 : (zerob && MEM_WB_regwrite) ? 2'b01 : 2'b11;
+  assign sel1 = (zero3 && EX_MEM_regwrite && (!EX_MEM_memread) && (!div_ready) && (!mul_ready)) ? 3'b000 :
+                (zero3 && EX_MEM_regwrite && (!EX_MEM_memread) && div_ready && (!mul_ready))    ? 3'b010 :
+                (zero3 && EX_MEM_regwrite && (!EX_MEM_memread) && (!div_ready) && mul_ready)    ? 3'b011 :
+                (zeroa && MEM_WB_regwrite)                                                      ? 3'b001 : 3'b100;
+  assign sel2 = (zero4 && EX_MEM_regwrite && (!EX_MEM_memread) && (!div_ready) && (!mul_ready)) ? 3'b000 :
+                (zero4 && EX_MEM_regwrite && (!EX_MEM_memread) && div_ready && (!mul_ready))    ? 3'b010 :
+                (zero4 && EX_MEM_regwrite && (!EX_MEM_memread) && (!div_ready) && mul_ready)    ? 3'b011 :
+                (zerob && MEM_WB_regwrite)                                                      ? 3'b001 : 3'b100;
 
   //assign sel2 = zero4 && EX_MEM_regwrite && (!EX_MEM_memread);
   always_comb
       case(sel1)
-        2'b00   : rs1_mod = alures;
-        2'b01   : rs1_mod = wbres;
-        2'b11   : rs1_mod = rs1;
-        default : rs1_mod = rs1; 
+        3'b000:  rs1_mod = alures;
+        3'b001:  rs1_mod = wbres;
+        3'b010:  rs1_mod = divres;
+        3'b011:  rs1_mod = mulres;
+        3'b100:  rs1_mod = rs1;
+        default: rs1_mod = rs1; 
       endcase  
       
    always_comb
         case(sel2)
-          2'b00   : rs2_mod = alures;
-          2'b01   : rs2_mod = wbres;
-          2'b11   : rs2_mod = rs2;
-          default : rs2_mod = rs2; 
+          3'b000:  rs2_mod = alures;
+          3'b001:  rs2_mod = wbres;
+          3'b010:  rs2_mod = divres;
+          3'b011:  rs2_mod = mulres;
+          3'b100:  rs2_mod = rs2;
+          default: rs2_mod = rs2; 
         endcase  
   //assign rs1_mod = (sel1) ? alures : rs1;
 

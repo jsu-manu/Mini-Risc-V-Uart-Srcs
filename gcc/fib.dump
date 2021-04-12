@@ -1,0 +1,81 @@
+
+fib.elf:     file format elf32-littleriscv
+
+
+Disassembly of section .text:
+
+00000000 <_start>:
+   0:	00001117          	auipc	sp,0x1
+   4:	0c010113          	addi	sp,sp,192 # 10c0 <_sp0>
+   8:	00000097          	auipc	ra,0x0
+   c:	00c08093          	addi	ra,ra,12 # 14 <_endloop>
+  10:	04a000ef          	jal	ra,5a <main>
+
+00000014 <_endloop>:
+  14:	a001                	j	14 <_endloop>
+
+00000016 <fib>:
+  16:	1101                	addi	sp,sp,-32
+  18:	ce06                	sw	ra,28(sp)
+  1a:	cc22                	sw	s0,24(sp)
+  1c:	ca26                	sw	s1,20(sp)
+  1e:	1000                	addi	s0,sp,32
+  20:	fea42623          	sw	a0,-20(s0)
+  24:	fec42703          	lw	a4,-20(s0)
+  28:	4785                	li	a5,1
+  2a:	00e7c563          	blt	a5,a4,34 <fib+0x1e>
+  2e:	fec42783          	lw	a5,-20(s0)
+  32:	a831                	j	4e <fib+0x38>
+  34:	fec42783          	lw	a5,-20(s0)
+  38:	17fd                	addi	a5,a5,-1
+  3a:	853e                	mv	a0,a5
+  3c:	3fe9                	jal	16 <fib>
+  3e:	84aa                	mv	s1,a0
+  40:	fec42783          	lw	a5,-20(s0)
+  44:	17f9                	addi	a5,a5,-2
+  46:	853e                	mv	a0,a5
+  48:	37f9                	jal	16 <fib>
+  4a:	87aa                	mv	a5,a0
+  4c:	97a6                	add	a5,a5,s1
+  4e:	853e                	mv	a0,a5
+  50:	40f2                	lw	ra,28(sp)
+  52:	4462                	lw	s0,24(sp)
+  54:	44d2                	lw	s1,20(sp)
+  56:	6105                	addi	sp,sp,32
+  58:	8082                	ret
+
+0000005a <main>:
+  5a:	1101                	addi	sp,sp,-32
+  5c:	ce06                	sw	ra,28(sp)
+  5e:	cc22                	sw	s0,24(sp)
+  60:	1000                	addi	s0,sp,32
+  62:	47a5                	li	a5,9
+  64:	fef42623          	sw	a5,-20(s0)
+  68:	fec42503          	lw	a0,-20(s0)
+  6c:	376d                	jal	16 <fib>
+  6e:	87aa                	mv	a5,a0
+  70:	853e                	mv	a0,a5
+  72:	2039                	jal	80 <print>
+  74:	4781                	li	a5,0
+  76:	853e                	mv	a0,a5
+  78:	40f2                	lw	ra,28(sp)
+  7a:	4462                	lw	s0,24(sp)
+  7c:	6105                	addi	sp,sp,32
+  7e:	8082                	ret
+
+00000080 <print>:
+  80:	7179                	addi	sp,sp,-48
+  82:	d622                	sw	s0,44(sp)
+  84:	1800                	addi	s0,sp,48
+  86:	fca42e23          	sw	a0,-36(s0)
+  8a:	fe042623          	sw	zero,-20(s0)
+  8e:	fdc42783          	lw	a5,-36(s0)
+  92:	fec42703          	lw	a4,-20(s0)
+  96:	4701                	li	a4,0
+  98:	aaaaa737          	lui	a4,0xaaaaa
+  9c:	c71c                	sw	a5,8(a4)
+  9e:	0001                	nop
+  a0:	5432                	lw	s0,44(sp)
+  a2:	6145                	addi	sp,sp,48
+  a4:	8082                	ret
+	...

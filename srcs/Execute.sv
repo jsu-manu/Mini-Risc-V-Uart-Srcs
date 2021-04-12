@@ -59,16 +59,28 @@ module Execute(main_bus bus);
  
   logic EX_MEM_memread_sig, EX_MEM_regwrite_sig;
   logic [31:0] EX_MEM_alures_sig;
+  logic [31:0] EX_MEM_mulres_sig;
+  logic [31:0] EX_MEM_divres_sig;
   logic [4:0]  EX_MEM_rd_sig;
   logic comp_res;
   logic [31:0] alures;
+  logic [31:0] mulres;
+  logic [31:0] divres;
   logic [2:0]  sel;
   logic [31:0] ALUop1,ALUop2,rs2_mod;
   logic [31:0] rs2_mod_final;//new
   
   logic [31:0] CSR_res;
+  
+  logic [31:0] CSR_mod; 
+  
+  
  
   
+  logic mul_ready_sig;
+  logic div_ready_sig;
+  logic mul_ready;
+  logic div_ready;
 
   Forwarding dut(
          .EX_MEM_regwrite(EX_MEM_regwrite_sig),
@@ -81,12 +93,18 @@ module Execute(main_bus bus);
          .ID_EX_rs1(bus.ID_EX_rs1),
          .ID_EX_rs2(bus.ID_EX_rs2),
          .alures(bus.EX_MEM_alures),
+         .divres(divres),
+         .mulres(mulres),
          .memres(bus.WB_res),
          .wbres(bus.WB_ID_res),
          .alusrc(bus.ID_EX_alusrc),
          .imm(bus.ID_EX_imm),
          .rs1(bus.ID_EX_dout_rs1),
          .rs2(bus.ID_EX_dout_rs2),
+         .div_ready(div_ready),
+         .mul_ready(mul_ready),
+         .EX_MEM_CSR(bus.EX_MEM_CSR),
+         .EX_MEM_CSR_read(bus.EX_MEM_CSR_read),
          .fw_rs1(ALUop1),
          .fw_rs2(ALUop2),
          .rs2_mod(rs2_mod)
@@ -107,8 +125,30 @@ module Execute(main_bus bus);
         .comp_res(comp_res), 
         .CSR_res(CSR_res),
         .CSR_in(bus.ID_EX_CSR), 
-        .csrsel(bus.csrsel)
+        .csrsel(bus.csrsel),
+        .ID_EX_comp_sig(bus.ID_EX_comp_sig)
         );
+
+  Multiplier mul(
+    .clk(bus.clk),
+    .rst(bus.Rst),
+    .mulsel(bus.ID_EX_mulsel),
+    .a(ALUop1),
+    .b(ALUop2),
+    .ready(mul_ready_sig),
+    .res(mulres)
+  );
+
+  Divider div
+  (
+    .clk(bus.clk),
+    .rst(bus.Rst),
+    .divsel(bus.ID_EX_divsel),
+    .a(ALUop1),
+    .b(ALUop2),
+    .ready(div_ready_sig),
+    .res(divres)
+  );
         
  always_ff @(posedge bus.clk) begin
         if(bus.Rst) begin
@@ -117,7 +157,11 @@ module Execute(main_bus bus);
             bus.EX_MEM_memwrite<=1'b0;
             EX_MEM_regwrite_sig<=1'b0;
             EX_MEM_alures_sig<=32'h00000000;
+            EX_MEM_mulres_sig<=32'h00000000;
+            EX_MEM_divres_sig<=32'h00000000;
             bus.EX_MEM_dout_rs2<=32'h00000000;
+            bus.EX_MEM_mul_ready<=1'b0;
+            bus.EX_MEM_div_ready<=1'b0;
             bus.EX_MEM_rs2 <= 5'h0;
             bus.EX_MEM_rs1 <= 5'h0;
             bus.EX_MEM_comp_res<=1'b0;
@@ -129,6 +173,8 @@ module Execute(main_bus bus);
             bus.EX_CSR_write <= 0;
             bus.EX_MEM_CSR <= 0;
             bus.EX_MEM_CSR_read <= 0;
+            div_ready <= 0;
+            mul_ready <= 0;
         end
         else if(!bus.dbg && !bus.mem_hold) begin
             EX_MEM_rd_sig<=bus.ID_EX_rd;
@@ -136,6 +182,10 @@ module Execute(main_bus bus);
             bus.EX_MEM_memwrite<=bus.ID_EX_memwrite;
             EX_MEM_regwrite_sig<=(bus.ID_EX_regwrite&&(!bus.ID_EX_compare))+(bus.ID_EX_regwrite&&bus.ID_EX_compare&&comp_res);
             EX_MEM_alures_sig<=alures;
+            EX_MEM_mulres_sig<=mulres;
+            bus.EX_MEM_mul_ready<=mul_ready_sig;
+            EX_MEM_divres_sig<=divres;
+            bus.EX_MEM_div_ready<=div_ready_sig;
             bus.EX_MEM_dout_rs2<=rs2_mod;//new
             bus.EX_MEM_rs2<=bus.ID_EX_rs2;
             bus.EX_MEM_rs1<=bus.ID_EX_rs1;
@@ -148,11 +198,17 @@ module Execute(main_bus bus);
             bus.EX_CSR_write <= bus.ID_EX_CSR_write;
             bus.EX_MEM_CSR <= bus.ID_EX_CSR;
             bus.EX_MEM_CSR_read <= bus.ID_EX_CSR_read;
+            div_ready <= div_ready_sig;
+            mul_ready <= mul_ready_sig;
         end
   end
   
+  assign bus.mul_ready=mul_ready_sig;
+  assign bus.div_ready=div_ready_sig;
   assign bus.EX_MEM_rd=EX_MEM_rd_sig;
   assign bus.EX_MEM_alures=EX_MEM_alures_sig;
+  assign bus.EX_MEM_mulres=EX_MEM_mulres_sig;
+  assign bus.EX_MEM_divres=EX_MEM_divres_sig;
   assign bus.EX_MEM_memread=EX_MEM_memread_sig;
   assign bus.EX_MEM_regwrite=EX_MEM_regwrite_sig;
 endmodule: Execute

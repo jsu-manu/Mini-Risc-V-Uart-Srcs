@@ -50,3 +50,7 @@ for i in range(len(deadbeef)-1, -1, -2):
 # 	tx = baddab99[i-1:i+1]
 # 	tx = binascii.unhexlify(tx)
 # 	ser.write(bytes(tx));
+
+while(1):
+	rcv = ser.read()
+	print(rvc.decode())

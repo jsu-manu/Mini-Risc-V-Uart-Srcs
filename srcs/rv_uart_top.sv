@@ -11,6 +11,7 @@ interface riscv_bus (
     logic [3:0] mem_en; 
     logic [31:0] mem_addr;
     logic [31:0] mem_din, mem_dout; 
+    logic [2:0] storecntrl;
     logic [31:0] debug_output;
     
     logic imem_en, imem_prog_ena;
@@ -18,25 +19,63 @@ interface riscv_bus (
     logic [31:0] imem_dout, imem_din; 
     
     logic mem_hold;
+    logic uart_IRQ;
+    logic trapping;
+    
+    //RAS signals 
+    logic RAS_branch, ret, stack_full, stack_empty, stack_mismatch; 
+    logic [31:0] RAS_addr_in;
+    
+    logic RAS_rdy; 
+    logic [31:0] IF_ID_pres_addr, ins, IF_ID_dout_rs1, branoff, next_addr; 
+    logic branch, IF_ID_jal;
+    logic [4:0] IF_ID_rd;
+    
+    assign ret = (branch & ((ins == 32'h8082) | (ins == 32'h8067)));
+//    assign RAS_branch = (branch & (~ret));
+	assign RAS_branch = branch & IF_ID_jal & (IF_ID_rd == 1); 
+    //assign RAS_mem_rdy = 1;
+    assign RAS_addr_in = RAS_branch ? (next_addr) : (ret ? branoff : 1'b0);
+//    assign RAS_addr_in = RAS_branch ? ret_addr : (ret ? IF_ID_dout_rs1 : 1'b0);
     
     modport core(
         input clk, Rst, debug, prog, debug_input, mem_dout, imem_dout, //rx,
         output debug_output, mem_wea, mem_rea, mem_en, mem_addr, mem_din, imem_en, 
-        output imem_addr, imem_din, imem_prog_ena,
-        input key, input mem_hold
+        output imem_addr, imem_din, imem_prog_ena, storecntrl,
+        input key, input mem_hold, uart_IRQ, 
+        output trapping, 
+        output IF_ID_pres_addr, ins, IF_ID_dout_rs1, branch, IF_ID_jal, IF_ID_rd, branoff, next_addr,
+        input stack_mismatch, RAS_rdy, RAS_branch, ret
     );
     
     modport memcon(
         input clk, Rst, mem_wea, mem_en, mem_addr, mem_din, imem_en, 
-        input imem_addr, imem_din, imem_prog_ena, mem_rea,
+        input imem_addr, imem_din, imem_prog_ena, mem_rea, storecntrl,
         output mem_dout, imem_dout, mem_hold
+    );
+    
+    modport CRAS(
+    	input clk, Rst, RAS_branch, ret, RAS_addr_in,
+    	//input RAS_mem_rdy, 
+    	output stack_full, stack_empty, stack_mismatch, RAS_rdy
+    );
+    
+//    assign RAS_rdy = 1; 
+//    assign stack_full = 0;
+//    assign stack_empty = 0;
+//    assign stack_mismatch = 0; 
+    
+    modport uart(
+    	output uart_IRQ
     );
 endinterface
 
 interface mmio_bus (
         input logic clk, Rst, rx,// uart_clk,
         input logic [4:0] debug_input, BR_clk,
-        output logic tx
+        output logic tx, 
+        input logic spi_miso, 
+        output logic spi_mosi, spi_cs, spi_sck
         //output logic[31:0] led
     );
     logic [31:0] led;
@@ -51,6 +90,23 @@ interface mmio_bus (
     logic [2:0] uart_addr;
 //    logic BR_clk;
     
+    //SPI interface
+    logic spi_rd, spi_wr;
+    logic [7:0] spi_din;
+    logic spi_ignore_response; 
+    logic spi_data_avail, spi_buffer_empty, spi_buffer_full;
+    logic [7:0] spi_dout;  
+    
+    //CRAS interface
+    logic [31:0] RAS_config_din; 
+    logic [2:0] RAS_config_addr; 
+    logic RAS_config_wr, RAS_ena;
+    logic [31:0] RAS_mem_dout, RAS_mem_din, RAS_mem_addr; 
+    logic RAS_mem_rdy, RAS_mem_rd, RAS_mem_wr; 
+    
+    //Counter Stuff
+    logic [31:0] cnt_dout;
+    logic cnt_zero, cnt_ovflw;
     
     
     modport memcon(
@@ -58,7 +114,16 @@ interface mmio_bus (
         output disp_dat, disp_wea, led, 
         
         input uart_dout, rx_data_present , tx_full,
-        output uart_din, rx_ren, tx_wen, uart_addr
+        output uart_din, rx_ren, tx_wen, uart_addr, 
+        
+        input spi_data_avail, spi_buffer_empty, spi_buffer_full, spi_dout, 
+        output spi_rd, spi_wr, spi_din, spi_ignore_response, 
+        
+        output RAS_config_din, RAS_config_addr, RAS_config_wr, 
+        input RAS_mem_din, RAS_mem_addr, RAS_mem_rd, RAS_mem_wr, 
+        output RAS_mem_dout, RAS_mem_rdy,
+        input cnt_dout, cnt_ovflw,
+        output cnt_zero
     );
     
     modport display(
@@ -69,6 +134,29 @@ interface mmio_bus (
     modport uart(
         input clk, Rst, rx, rx_ren, tx_wen, uart_din, uart_addr, BR_clk, //uart_clk,
         output rx_data_present, tx, uart_dout, tx_full
+    );
+    
+    modport spi(
+    	input clk, Rst, spi_rd, spi_wr, spi_din, spi_ignore_response, spi_miso, 
+    	output spi_data_avail, spi_buffer_empty, spi_buffer_full, spi_dout, spi_mosi, spi_cs, spi_sck
+    );
+    
+    modport CRAS(
+    	input RAS_config_din, RAS_config_addr, RAS_config_wr, 
+    	output RAS_ena, 
+    	input RAS_mem_dout, RAS_mem_rdy,
+    	output RAS_mem_din, RAS_mem_addr, RAS_mem_rd, RAS_mem_wr
+    );
+    
+//    assign RAS_ena = 0;
+//    assign RAS_mem_din = 0;
+//    assign RAS_mem_addr = 0;
+//    assign RAS_mem_rd = 0;
+//    assign RAS_mem_wr = 0;
+    
+    modport counter(
+    	input clk, Rst, cnt_zero, 
+    	output cnt_ovflw, cnt_dout
     );
     
 endinterface
@@ -85,8 +173,12 @@ module rv_uart_top
   output logic tx, clk_out,
   output logic [6:0] sev_out,
   output logic [7:0] an,
-  output logic [15:0] led
+  output logic [15:0] led,
 //  input logic [95:0] key
+
+	//SPI STUFF
+	input logic miso, 
+	output logic mosi, cs
   );
 
   logic [31:0] debug_output;
@@ -108,13 +200,29 @@ assign key[11:0]=12'h3cf;
 //assign key[11:0] = 12'h000;
   logic rst_in, rst_last;
   
+  
+  logic spi_mosi, spi_miso, spi_cs, spi_sck;
+//  assign spi_miso = spi_mosi;
+	assign spi_miso = miso;
+	assign mosi = spi_mosi; 
+	assign cs = spi_cs; 
+//	assign cs = 1;
+//	assign mosi = 1;
+	
+	
+STARTUPE2 startup_i(.CFGCLK(), .CFGMCLK(), .EOS(), .PREQ(), .CLK(0), .GSR(0), .GTS(0), .KEYCLEARB(0), .PACK(0), .USRCCLKO(spi_sck), .USRCCLKTS(0), .USRDONEO(0), .USRDONETS(0));
 //  logic mem_wea;
 //  logic [3:0] mem_en;
 //  logic [11:0] mem_addr;
 //  logic [31:0] mem_din, mem_dout;
+
+
 //`ifndef SYNTHESIS
 
 clk_wiz_0 c0(.*);
+//initial begin
+//	clk_50M = 0;
+//end
   riscv_bus rbus(.clk(clk_50M), .*);
   mmio_bus mbus(.clk(clk_50M), .BR_clk(clk), .*);
 clk_div cdiv(clk,Rst,16'd500,clk_7seg);  
@@ -131,7 +239,7 @@ clk_div cdiv(clk,Rst,16'd500,clk_7seg);
 
 //`endif
   
-  assign led = {14'h0, mbus.tx_full, mbus.rx_data_present};
+  assign led = {12'h0, rbus.stack_mismatch, mbus.RAS_ena, rbus.trapping, rbus.uart_IRQ};
   
   assign debug_output = (prog | debug ) ? rbus.debug_output : mbus.disp_out;
   
@@ -150,25 +258,33 @@ clk_div cdiv(clk,Rst,16'd500,clk_7seg);
     
     Debug_Display d0(mbus.display);
     
-    uart_controller u0(mbus.uart);
+    uart_controller u0(mbus.uart, rbus.uart);
+    
+    spi_controller spi0(mbus.spi);
+    
+    CRAS_top #(.DEPTH(32), .FILL_THRESH(24), .EMPTY_THRESH(16)) CRAS(rbus.CRAS, mbus.CRAS);
+    
+    counter cnt0(mbus.counter);
     
 //    Memory_byteaddress mem0(.clk(clk_50M), .rst(Rst), .wea(mem_wea), .en(mem_en), .addr(mem_addr),
 //        .din(mem_din), .dout(mem_dout));
     
   //clock divider logic
 //  always @(posedge clk) begin
-//    rst_last <= Rst;
-//    if (Rst == 1'b1 && rst_in == 1'b0 && rst_last == 1'b0) 
-//        rst_in <= 1;
-//    else
-//        rst_in <= 0;
-//     count <= count + 1;
-//     clk_50M<=!clk_50M;
-//     if(count==500)
-//     begin
-//        count<=0;
-//        clk_disp <= !clk_disp;
-//     end
+//  	if (Rst) clk_50M <= 0;
+//  	else clk_50M<=!clk_50M;
+////    rst_last <= Rst;
+////    if (Rst == 1'b1 && rst_in == 1'b0 && rst_last == 1'b0) 
+////        rst_in <= 1;
+////    else
+////        rst_in <= 0;
+////     count <= count + 1;
+////     clk_50M<=!clk_50M;
+////     if(count==500)
+////     begin
+////        count<=0;
+////        clk_disp <= !clk_disp;
+////     end
 //  end
  
 

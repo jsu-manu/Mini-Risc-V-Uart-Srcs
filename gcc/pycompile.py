@@ -43,7 +43,7 @@ parser.add_argument('-o', '--output', type=str, default='a.hex')
 parser.add_argument('-k', '--compile_kernel', action='store_true')
 args = parser.parse_args()
 
-cmd = 'riscv32-unknown-elf-gcc -nostdlib -Wl,-T,' + args.linker_script + ' -o ' #',-e,0 -o '
+cmd = 'riscv32-unknown-elf-gcc -nostdlib -O0 -Wl,-T,' + args.linker_script + ' -o ' #',-e,0 -o '
 dmp = 'riscv32-unknown-elf-objdump -d '
 
 # asm = 'heapthing.S'

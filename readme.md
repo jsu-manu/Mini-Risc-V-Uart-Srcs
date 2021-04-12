@@ -40,10 +40,19 @@ $ git submodule update --init --recursive
 $ export RISCV=path/to/where/you/want/toolchain/installed
 ```
 
-Next, open `build-rv32ima.sh` and edit the two lines starting with `build_project`. Change the `--with-isa=rv32ima` parameter to `--with-isa=rv32i`. Our core does not support the `m` or `a` extensions of RISC-V yet. Then just run that script.
+Next, open `build-rv32ima.sh` and edit the two lines starting with `build_project`. Change the `--with-isa=rv32ima` parameter to `--with-isa=rv32imc`. Our core does not support the `a` extension of RISC-V yet. Then just run that script.
 
 ```bash
 $ ./build-rv32ima.sh
+```
+
+*You can also install just the toolchain without the simulator using just the toolchain repo* 
+
+```bash
+$ git clone https://github.com/riscv/riscv-gnu-toolchain
+$ cd riscv-gnu-toolchain
+$ ./configure --prefix=/path/to/where/you/want/toolchain/installed --with-arch=rv32ic
+$ make
 ```
 
 Now that the toolchain is installed, make sure that it's in your PATH. Type the following line, or put it in your `~/.bashrc` to make the change permanent:
@@ -75,7 +84,7 @@ Clocking Options
 Output Clocks
   clk_out1:
     port name: clk_50M
-    output freq: 50
+    output freq: 50 (25 if timing fails)
     Duty Cycle: 50
   clk_out2
     port name: clk_5M
@@ -85,7 +94,7 @@ Output Clocks
   uncheck the "reset" and "locked" options under Enable Optional Inputs/Outputs for MMCM/PLL
 ```
 
-```
+<!-- ```
 Block Memory Generator
 
 Component name: blk_mem_gen_0
@@ -114,6 +123,32 @@ Port B Options:
 Other Options:
   Load init file: Check, and include a coe file of your choice
   Fill Remaining Memory Locations: 0
+``` -->
+
+```
+Block RAM Cells 
+
+Component name: mem_cell_0/1/2/3
+
+Basic
+  Interface Type: Native
+  Memory Type: True Dual Port RAM
+  ECC Type: No ECC
+  Write Enable: Unchecked 
+  Algorithm Options: Minimum Area
+
+Port A Options:
+  Write & Read width: 8
+  Write & Read depth: 32768
+  Operating Mode: Write first
+  Enable Port Type: Use ENA pin
+  Uncheck Primitives output register and RSTA pin 
+
+Port B Options:
+  Identical to port A 
+
+Other Options:
+  Check Fill Remaining Memory Locations
 ```
 
 ```
@@ -130,6 +165,24 @@ Native Ports
     Write Depth: 512
 ```
 
+```
+Return Address Stack BlockRAM
+
+Basic
+  Interface Type: Native
+  Implementation: Single Port RAM
+  Generate Address with 32 bits: Checked
+  No ECC
+
+Port A Options
+  Write & Read Width: 32
+  Write & Read Depth: 4096
+  Operating Mode: Write First
+  Enable Port Type: Use ENA Pin 
+  Primitives Output Register: Unchecked
+  RSTA Pin: Unchecked
+```
+
 <hr> 
 
 ## Programming the Core
@@ -137,13 +190,39 @@ Native Ports
 A c program may be compiled and loaded onto the core as a `.coe` file for the block memory. Within the `gcc` folder is a number of example and test programs, as well as a python script called `pycompile.py`. This script leverages the riscv toolchain to compile an ELF file, which is converted into a coe. It can also create a plain hex file for loading onto the core with the in-development kernel. 
 
 Example:
+
+*Compile hex file*
 ```
-./pycompile.py -s -o test.coe test.c uart.c utils.c
+./pycompile.py -s -x -o test.hex test.c uart.c utils.c
+```
+
+*Convert to coe files for memory cells & generate tcl script*
+You'll want to change the first line of `hex2coe.py` to point to `<where this repo is installed>/gcc`
+```
+python hex2coe.py test.hex
+```
+
+*In Vivado TCL console*
+```
+cd <where this repo is installed>/gcc
+source loadcoe.tcl
 ```
 
 #### Communication with the Core
 
 Communication to and from the core is done using UART, with a baud rate of 115200. Source files for using uart are in the gcc folder, specifically `uart.c` and `uart.h`, which rely on `utils.c` for some key functions, as the core does not currently support the C standard library. 
+
+#### Some useful libraries
+
+`uart.c` has the drivers for uart communication. `uart_init()` MUST be called before any serial communication can occur, as this function sets up the baud rate divisors. 
+
+`counter.c` can be used to set, reset, and check a built-in counter. This is useful for performance evaluations. 
+
+`CRAS.c` has the drivers for the Cryptographic Return Address Stack (CRAS). You can enable/disable it and change the encryption key. 
+
+`utils.c` has some functions such as implementing multiplication/division. You need to include it as well when using serial communication. 
+
+`spi.c` has the drivers for the SPI master interface. 
 
 <hr>
 

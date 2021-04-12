@@ -1,4 +1,5 @@
 #include"trap.h"
+#include"uart.h"
 
 void init_trap() {
 	int i; 

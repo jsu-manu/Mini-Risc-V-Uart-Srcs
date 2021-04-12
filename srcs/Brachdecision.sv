@@ -50,7 +50,10 @@ module Branchdecision
   assign bge = (funct3[2]) && (!funct3[1]) && funct3[0] && branch;
   assign bltu= (funct3[2]) && (funct3[1]) && (!funct3[0]) && branch;
   assign bgeu= (funct3[2]) && (funct3[1]) && (funct3[0]) && branch;
+  
     
   assign branch_taken = ((beq && zero) || (bne && (!zero)) || (blt && less) || 
                         (bge &&  (!less)) || (bltu && lessu) || (bgeu && (!lessu)) || jal || jalr) && (!hazard);
+                        
+  
 endmodule: Branchdecision
