@@ -24,7 +24,7 @@ module Multiplier
   wire mulhsu = (mulsel == 3'b011); // mulhsu
   wire mulhu  = (mulsel == 3'b100); // mulhu
 
-  wire mul_op = mul || mulh || mulhsu || mulhu; 
+  wire mul_op = mul || mulh || mulhsu || mulhu;
 
   always_comb // Set operands' sign bits based on instruction type.
   begin
@@ -68,10 +68,10 @@ module Multiplier
     end
     else if (busy) // Stage 2: Calculate multiplication.
     begin
-      full_res = {{32{factor_a[32]}}, factor_a} * {{32{factor_b[32]}}, factor_b};
-      count    = 1'b1;
-      rdy      = 1'b1;
-      busy     = 1'b0;
+      full_res <= {{32{factor_a[32]}}, factor_a} * {{32{factor_b[32]}}, factor_b};
+      count    <= 1'b1;
+      rdy      <= 1'b1;
+      busy     <= 1'b0;
     end
     else // Stage 1: Set operands and result formatting conditions.
     begin

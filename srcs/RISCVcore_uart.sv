@@ -203,7 +203,7 @@ interface main_bus (
         input EX_MEM_rd, IF_ID_dout_rs1, IF_ID_dout_rs2,
         input mul_ready, div_ready,
         input IF_ID_CSR, trap, trigger_trap, RAS_rdy,
-        inout ID_EX_memread, ID_EX_regwrite,
+        input ID_EX_memread, ID_EX_regwrite,
         output ID_EX_pres_addr, IF_ID_jalr, ID_EX_jalr, branch, IF_ID_jal,
         output IF_ID_rs1, IF_ID_rs2, IF_ID_rd,
         output ID_EX_dout_rs1, ID_EX_dout_rs2, branoff, hz,
@@ -271,11 +271,6 @@ interface main_bus (
         input MEM_WB_mulres, MEM_WB_divres,
         input MEM_WB_CSR, MEM_WB_CSR_read,
         output WB_ID_regwrite, WB_ID_rd, WB_res, WB_ID_res
-    );
-
-    //modport for photon_core
-    modport photon_core(
-        /* TODO */
     );
 
 //    modport rstack(

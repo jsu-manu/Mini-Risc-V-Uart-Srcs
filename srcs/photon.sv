@@ -6,7 +6,7 @@ typedef enum bit[2:0] {
 typedef enum bit[1:0] {
     WAIT=0, INPUT=1, EXEC=2, OUTPUT=3
     } photon_state;
-    
+
 interface photon_bus (
         input  logic clk,
         input  logic rst // Reset all registers to 0
@@ -18,27 +18,27 @@ interface photon_bus (
     logic ready;
 endinterface
 
-module photon(photon_bus bus); 
-    
+module photon(photon_bus bus);
+
     logic [31:0] reg_input [7:0];
     logic [31:0] reg_output [7:0];
     photon_state state;
     integer register_index;
-        
+
     assign bus.ready = (state == WAIT);
     assign bus.data_out = bus.opcode == READ ? reg_output[bus.addr] : bus.opcode == CHECK ? { 31'h00000000, bus.ready } : 32'h00000000;
-    
+
     logic lwh_clk, lwh_init, lwh_nReset, lwh_nBlock;
     logic [31:0] lwh_input, lwh_output;
     logic lwh_outReady;
 
     lwh lwh0(lwh_clk, lwh_init, lwh_nReset, lwh_nBlock,
         lwh_input, lwh_output, lwh_outReady);
-        
+
     assign lwh_clk = bus.clk;
 //    assign lwh_nReset = !bus.rst;
     assign lwh_input = register_index < 8 ? reg_input[register_index] : 32'h00000000;
-    
+
     always_ff @(posedge bus.clk) begin
         if (bus.rst) begin
             // Reset
@@ -78,14 +78,14 @@ module photon(photon_bus bus);
         else if (state == EXEC && lwh_outReady) begin
             $display($time, " Finishing hash");
             register_index = 0;
-            reg_output[register_index] = lwh_output;
+            reg_output[register_index] <= lwh_output;
             state = OUTPUT;
             $display($time, " Storing hash output %h", lwh_output);
         end
         else if (state == OUTPUT && register_index < 7) begin
             $display($time, " Storing hash output %h", lwh_output);
             register_index = register_index + 1;
-            reg_output[register_index] = lwh_output;
+            reg_output[register_index] <= lwh_output;
         end
         else if (state == OUTPUT && register_index >= 7) begin
             $display($time, " Finished reading hash output");

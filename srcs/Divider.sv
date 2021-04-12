@@ -60,22 +60,22 @@ module Divider
     if (rdy) // Stage 3: Wait 2 clock cycles.
     begin
       if (count)
-        count <= 0;
+        count = 0;
       else
-        rdy <= 0;
+        rdy = 0;
     end
     else if (rst || !divrem_op) // Reset
     begin
       numerator  <= 32'b0;
       divisor    <= 32'b0;
-      quotient   <= 32'b0;
-      remainder  <= 32'b0;
-      index      <= 5'b0;
+      quotient    = 32'b0;
+      remainder   = 32'b0;
+      index       = 5'b0;
       div_inst   <= 1'b0;
       invert_res <= 1'b0;
-      count      <= 1'b0;
-      rdy        <= 1'b0;
-      busy       <= 1'b0;
+      count       = 1'b0;
+      rdy         = 1'b0;
+      busy        = 1'b0;
     end
     else if (busy) // Stage 2: Calculate multiplication.
     begin
@@ -97,12 +97,12 @@ module Divider
     begin
       numerator  <= op_a;
       divisor    <= op_b;
-      quotient   <= 32'b0;
-      remainder  <= 32'b0;
+      quotient    = 32'b0;
+      remainder   = 32'b0;
       div_inst   <= div_op;
       invert_res <= (div && neg_q && |b) || (rem && neg_r);
-      index      <= 5'd31;
-      busy       <= 1'b1;
+      index       = 5'd31;
+      busy        = 1'b1;
     end
   end
 

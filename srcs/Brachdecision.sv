@@ -3,10 +3,10 @@
 // Created by:
 //   Md Badruddoja Majumder, Garrett S. Rose
 //   University of Tennessee, Knoxville
-// 
+//
 // Created:
 //   October 30, 2018
-// 
+//
 // Module name: Branchdecision
 // Description:
 //   Implements the RISC-V branch decision logic (part of decoder pipeline stage)
@@ -22,7 +22,7 @@
 //   jalr -- indicates jump and link for subrouting return
 // Output:
 //   branch_taken -- flag branch taken
-// 
+//
 //////////////////////////////////////////////////////////////////////////////////
 
 module Branchdecision
@@ -31,16 +31,16 @@ module Branchdecision
   input  logic        branch,
   input  logic [2:0]  funct3,
   output logic        branch_taken,
-  input  logic        hazard,   
+  input  logic        hazard,
   input  logic        jal,
   input  logic        jalr);
-  
+
   logic [32:0] sub_res; //comparison result of rs1 and rs2 including carry out;
-  logic sel,zero,less;
+  logic sel,zero,less,lessu;
   logic beq, bne, blt, bge, bltu, bgeu;
-    
+
   assign sub_res = rs1_mod - rs2_mod;
-    
+
   assign zero = !(|sub_res[31:0]);
   assign less = ($signed(rs1_mod) < $signed(rs2_mod));
   assign lessu= (rs1_mod < rs2_mod);
@@ -50,10 +50,10 @@ module Branchdecision
   assign bge = (funct3[2]) && (!funct3[1]) && funct3[0] && branch;
   assign bltu= (funct3[2]) && (funct3[1]) && (!funct3[0]) && branch;
   assign bgeu= (funct3[2]) && (funct3[1]) && (funct3[0]) && branch;
-  
-    
-  assign branch_taken = ((beq && zero) || (bne && (!zero)) || (blt && less) || 
+
+
+  assign branch_taken = ((beq && zero) || (bne && (!zero)) || (blt && less) ||
                         (bge &&  (!less)) || (bltu && lessu) || (bgeu && (!lessu)) || jal || jalr) && (!hazard);
-                        
-  
+
+
 endmodule: Branchdecision
