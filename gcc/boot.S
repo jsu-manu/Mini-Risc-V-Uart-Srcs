@@ -13,8 +13,8 @@ _start:
 	# la a0, _heap_start
 	# la a1, _heap_size
 	# call kheap
-	la a0, _rp0
-	call set_CRAS_base_addr
+	# la a0, _rp0
+	# call set_CRAS_base_addr
 
 	la ra, _endloop
 	jal main

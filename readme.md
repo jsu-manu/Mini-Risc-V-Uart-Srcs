@@ -40,7 +40,7 @@ $ git submodule update --init --recursive
 $ export RISCV=path/to/where/you/want/toolchain/installed
 ```
 
-Next, open `build-rv32ima.sh` and edit the two lines starting with `build_project`. Change the `--with-isa=rv32ima` parameter to `--with-isa=rv32ic`. Our core does not support the `m` or `a` extensions of RISC-V yet. Then just run that script.
+Next, open `build-rv32ima.sh` and edit the two lines starting with `build_project`. Change the `--with-isa=rv32ima` parameter to `--with-isa=rv32imc`. Our core does not support the `a` extension of RISC-V yet. Then just run that script.
 
 ```bash
 $ ./build-rv32ima.sh
