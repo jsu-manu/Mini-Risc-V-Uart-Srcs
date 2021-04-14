@@ -1,11 +1,10 @@
 `timescale 1ns / 10ps 
 module sram_scan_wrapper ( clk, rst_n, scan_in, scan_out );
 
-parameter N_addr = 12;  //number of bits in addr
-parameter N_cnt = 13;  // bits reserved for storing count for subsequent addresses + 1 bit specifying read/write
+parameter N_addr = 11;  //number of bits in addr
+parameter N_cnt = 12;  // bits reserved for storing count for subsequent addresses + 1 bit specifying read/write
 
 parameter N_data = 8;   //number of bits in data bus
-parameter N_clk = 3;   //number of bits in data bus
 
 input clk, rst_n, scan_in;
 output scan_out;

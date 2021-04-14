@@ -32,10 +32,10 @@ module clk_div(
     always_ff@(posedge clk_in)
     begin
         if(rst)
-	begin
-            clk_sig<=0;
-	    cnt<=0;
-	end
+        begin
+            clk_sig<=1;
+            cnt<=0;
+        end
 	
         else if(cnt==div)begin
             cnt<=0;
