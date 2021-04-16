@@ -11,15 +11,15 @@
       </db_ref>
    </db_ref_list>
    <zoom_setting>
-      <ZoomStartTime time="9860800fs"></ZoomStartTime>
-      <ZoomEndTime time="12110801fs"></ZoomEndTime>
-      <Cursor1Time time="11282800fs"></Cursor1Time>
+      <ZoomStartTime time="0fs"></ZoomStartTime>
+      <ZoomEndTime time="8130001fs"></ZoomEndTime>
+      <Cursor1Time time="5400000fs"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
       <NameColumnWidth column_width="192"></NameColumnWidth>
-      <ValueColumnWidth column_width="87"></ValueColumnWidth>
+      <ValueColumnWidth column_width="82"></ValueColumnWidth>
    </column_width_setting>
-   <WVObjectSize size="14" />
+   <WVObjectSize size="16" />
    <wvobject fp_name="/tb_sram_scan/clk" type="logic">
       <obj_property name="ElementShortName">clk</obj_property>
       <obj_property name="ObjectShortName">clk</obj_property>
@@ -45,24 +45,24 @@
       <obj_property name="ObjectShortName">sense_en</obj_property>
    </wvobject>
    <wvobject fp_name="/tb_sram_scan/SRAM_wrapper_inst/addr_cnt_reg" type="array">
-      <obj_property name="ElementShortName">addr_cnt_reg[22:0]</obj_property>
-      <obj_property name="ObjectShortName">addr_cnt_reg[22:0]</obj_property>
+      <obj_property name="ElementShortName">addr_cnt_reg[42:0]</obj_property>
+      <obj_property name="ObjectShortName">addr_cnt_reg[42:0]</obj_property>
    </wvobject>
    <wvobject fp_name="/tb_sram_scan/SRAM_wrapper_inst/data_scan_reg" type="array">
-      <obj_property name="ElementShortName">data_scan_reg[7:0]</obj_property>
-      <obj_property name="ObjectShortName">data_scan_reg[7:0]</obj_property>
+      <obj_property name="ElementShortName">data_scan_reg[31:0]</obj_property>
+      <obj_property name="ObjectShortName">data_scan_reg[31:0]</obj_property>
    </wvobject>
    <wvobject fp_name="/tb_sram_scan/SRAM_wrapper_inst/data_in_reg" type="array">
-      <obj_property name="ElementShortName">data_in_reg[7:0]</obj_property>
-      <obj_property name="ObjectShortName">data_in_reg[7:0]</obj_property>
+      <obj_property name="ElementShortName">data_in_reg[31:0]</obj_property>
+      <obj_property name="ObjectShortName">data_in_reg[31:0]</obj_property>
    </wvobject>
    <wvobject fp_name="/tb_sram_scan/SRAM_wrapper_inst/data_out_reg" type="array">
-      <obj_property name="ElementShortName">data_out_reg[7:0]</obj_property>
-      <obj_property name="ObjectShortName">data_out_reg[7:0]</obj_property>
+      <obj_property name="ElementShortName">data_out_reg[31:0]</obj_property>
+      <obj_property name="ObjectShortName">data_out_reg[31:0]</obj_property>
    </wvobject>
    <wvobject fp_name="/tb_sram_scan/SRAM_wrapper_inst/dout" type="array">
-      <obj_property name="ElementShortName">dout[7:0]</obj_property>
-      <obj_property name="ObjectShortName">dout[7:0]</obj_property>
+      <obj_property name="ElementShortName">dout[31:0]</obj_property>
+      <obj_property name="ObjectShortName">dout[31:0]</obj_property>
    </wvobject>
    <wvobject fp_name="/tb_sram_scan/SRAM_wrapper_inst/addr" type="array">
       <obj_property name="ElementShortName">addr[10:0]</obj_property>
@@ -73,7 +73,15 @@
       <obj_property name="ObjectShortName">addr_w[10:0]</obj_property>
    </wvobject>
    <wvobject fp_name="/tb_sram_scan/SRAM_wrapper_inst/din_w" type="array">
-      <obj_property name="ElementShortName">din_w[7:0]</obj_property>
-      <obj_property name="ObjectShortName">din_w[7:0]</obj_property>
+      <obj_property name="ElementShortName">din_w[31:0]</obj_property>
+      <obj_property name="ObjectShortName">din_w[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_sram_scan/SRAM_wrapper_inst/clk_count" type="array">
+      <obj_property name="ElementShortName">clk_count[31:0]</obj_property>
+      <obj_property name="ObjectShortName">clk_count[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_sram_scan/SRAM_wrapper_inst/clk_div" type="logic">
+      <obj_property name="ElementShortName">clk_div</obj_property>
+      <obj_property name="ObjectShortName">clk_div</obj_property>
    </wvobject>
 </wave_config>

@@ -1,11 +1,11 @@
 `timescale 1ns / 10ps 
 module sram_scan_wrapper ( clk, rst_n, scan_in, scan_out );
 
-parameter N_addr = 11;  //number of bits in addr
-parameter N_cnt = 12;  // bits reserved for storing count for subsequent addresses + 1 bit specifying read/write
+parameter N_addr = 31;  //number of bits in addr
+parameter N_cnt = 32;  // bits reserved for storing count for subsequent addresses + 1 bit specifying read/write
 
-parameter N_data = 8;   //number of bits in data bus
-parameter N_clk = 4;   //half the number of bits in data bus
+parameter N_data = 32;   //number of bits in data bus
+parameter N_clk = 16;   //half the number of bits in data bus
 
 input clk, rst_n, scan_in;
 output scan_out;
@@ -141,6 +141,39 @@ sram_compiled_array imem0 ( .dout7(dout[7]), .dout6(dout[6]),
      .sense_en(sense_en_w), .write_en(write_en_w), .clk(clk_w),
      .din7(din_w[7]), .din6(din_w[6]), .din5(din_w[5]), .din4(din_w[4]),
      .din3(din_w[3]), .din2(din_w[2]), .din1(din_w[1]), .din0(din_w[0]),
+     .addr10(addr_w[10]), .addr9(addr_w[9]),
+     .addr8(addr_w[8]), .addr7(addr_w[7]), .addr6(addr_w[6]),
+     .addr5(addr_w[5]), .addr4(addr_w[4]), .addr3(addr_w[3]),
+     .addr2(addr_w[2]), .addr1(addr_w[1]), .addr0(addr_w[0]));
+     
+sram_compiled_array imem1 ( .dout7(dout[15]), .dout6(dout[14]),
+     .dout5(dout[13]), .dout4(dout[12]), .dout3(dout[11]),
+     .dout2(dout[10]), .dout1(dout[9]), .dout0(dout[8]),
+     .sense_en(sense_en_w), .write_en(write_en_w), .clk(clk_w),
+     .din7(din_w[15]), .din6(din_w[14]), .din5(din_w[13]), .din4(din_w[12]),
+     .din3(din_w[11]), .din2(din_w[10]), .din1(din_w[9]), .din0(din_w[8]),
+     .addr10(addr_w[10]), .addr9(addr_w[9]),
+     .addr8(addr_w[8]), .addr7(addr_w[7]), .addr6(addr_w[6]),
+     .addr5(addr_w[5]), .addr4(addr_w[4]), .addr3(addr_w[3]),
+     .addr2(addr_w[2]), .addr1(addr_w[1]), .addr0(addr_w[0]));
+
+sram_compiled_array imem2 ( .dout7(dout[23]), .dout6(dout[22]),
+     .dout5(dout[21]), .dout4(dout[20]), .dout3(dout[19]),
+     .dout2(dout[18]), .dout1(dout[17]), .dout0(dout[16]),
+     .sense_en(sense_en_w), .write_en(write_en_w), .clk(clk_w),
+     .din7(din_w[23]), .din6(din_w[22]), .din5(din_w[21]), .din4(din_w[20]),
+     .din3(din_w[19]), .din2(din_w[18]), .din1(din_w[17]), .din0(din_w[16]),
+     .addr10(addr_w[10]), .addr9(addr_w[9]),
+     .addr8(addr_w[8]), .addr7(addr_w[7]), .addr6(addr_w[6]),
+     .addr5(addr_w[5]), .addr4(addr_w[4]), .addr3(addr_w[3]),
+     .addr2(addr_w[2]), .addr1(addr_w[1]), .addr0(addr_w[0]));
+
+sram_compiled_array imem3 ( .dout7(dout[31]), .dout6(dout[30]),
+     .dout5(dout[29]), .dout4(dout[28]), .dout3(dout[27]),
+     .dout2(dout[26]), .dout1(dout[25]), .dout0(dout[24]),
+     .sense_en(sense_en_w), .write_en(write_en_w), .clk(clk_w),
+     .din7(din_w[31]), .din6(din_w[30]), .din5(din_w[29]), .din4(din_w[28]),
+     .din3(din_w[27]), .din2(din_w[26]), .din1(din_w[25]), .din0(din_w[24]),
      .addr10(addr_w[10]), .addr9(addr_w[9]),
      .addr8(addr_w[8]), .addr7(addr_w[7]), .addr6(addr_w[6]),
      .addr5(addr_w[5]), .addr4(addr_w[4]), .addr3(addr_w[3]),
