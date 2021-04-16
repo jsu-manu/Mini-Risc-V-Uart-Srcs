@@ -165,58 +165,10 @@ end
 
 
 
-// Scanchain
-logic [31:0] scan_in_word;
-logic [31:0] scan_in_addr; // 0-16383, or 14 bits minimum
-bit   [4:0]  scan_in_bit_of_word; // 0-31
-logic scan_in_word_ready;
-logic [31:0] imem_addr_mux;
-logic [3:0] scan_in_wen;
-logic scan_finished;
-logic imem_en_mux;
-
-assign imem_addr_mux = (scan_in_word_ready & rbus.scan_en) ? scan_in_addr : (imem_addr | 32'h00000000);
-assign scan_in_wen = (scan_in_word_ready & rbus.scan_en) ? 4'b1111 : 4'b0000;
-assign imem_en_mux = (scan_in_word_ready & rbus.scan_en) ? 1 : imem_en;
-
-always @(posedge rbus.scan_clk or negedge rbus.scan_rst_n) begin
-    if (!rbus.scan_rst_n) begin
-        // Reset everything, start scanning from beginning
-        scan_in_word = 0;
-        scan_in_addr = 0;
-        scan_in_bit_of_word = 0;
-        scan_in_word_ready = 0;
-        scan_finished = 0;
-        $display($time, " [SC_IMEM] Reset instr. mem. scan chain");
-    end else if (rbus.scan_clk & rbus.scan_en & !scan_finished) begin
-        // Scan in current bit to word register
-        scan_in_word[scan_in_bit_of_word] = rbus.scan_in;
-        // Set next bit to read into and check if word finished
-        if (scan_in_bit_of_word == 31) begin
-            scan_in_bit_of_word = 0;
-            scan_in_word_ready = 1;
-            $display($time, " [SC_IMEM] Scanned %h into addr %h", scan_in_word, scan_in_addr);
-            // Check if scanned into entire instruction memory
-            //if (scan_in_addr == 32'd16383) begin
-            if (scan_in_addr == 32'd8) begin
-                scan_finished = 1;
-                $display($time, " [SC_IMEM] Finished scanning in instructions");
-            end else begin
-                scan_in_addr = scan_in_addr + 1;
-                // TODO +1 or +4?
-            end
-        end else begin
-            scan_in_word_ready = 0;
-            scan_in_bit_of_word = scan_in_bit_of_word + 1;
-        end
-    end
-end
-
-
-
-Mem_Interface sharedmem(.clk(clk), .imem_en(imem_en_mux), .mem_en((blkmem_wr | blkmem_rd) & (~mmio_region)), 
-    .storecntrl_a(3'b000), .storecntrl_b(blkmem_strctrl), .imem_addr(imem_addr_mux), .imem_din(scan_in_word), .mem_addr(blkmem_addr - 'h2000), 
-    .mem_din(blkmem_din), .imem_wen(scan_in_wen), .mem_wen(blkmem_en), .imem_dout(imem_dout), .mem_dout(doutb) 
+Mem_Interface sharedmem(.clk(clk), .imem_en(imem_en), .mem_en((blkmem_wr | blkmem_rd) & (~mmio_region)), 
+    .storecntrl_a(3'b000), .storecntrl_b(blkmem_strctrl), .imem_addr(imem_addr), .imem_din(scan_in_word), .mem_addr(blkmem_addr - 'h2000), 
+    .mem_din(blkmem_din), .imem_wen(scan_in_wen), .mem_wen(blkmem_en), .imem_dout(imem_dout), .mem_dout(doutb),
+    .scan_en(rbus.scan_en), .scan_clk(rbus.scan_clk), .scan_in(rbus.scan_in), .scan_out(rbus.scan_out)
     );
 
 endmodule : Memory_Controller

@@ -2,7 +2,8 @@
 
 interface riscv_bus (
     input  logic clk, Rst, debug, prog,
-    input  logic scan_clk, scan_en, scan_rst_n, scan_in,
+    input  logic scan_en, scan_in, scan_clk,
+    output logic scan_out,
     input  logic [4:0] debug_input,
     input  logic [95:0] key
     );
@@ -50,8 +51,9 @@ interface riscv_bus (
     modport memcon(
         input clk, Rst, mem_wea, mem_en, mem_addr, mem_din, imem_en,
         input imem_addr, imem_din, imem_prog_ena, mem_rea, storecntrl,
-        input scan_clk, scan_en, scan_rst_n, scan_in,
-        output mem_dout, imem_dout, mem_hold
+        output mem_dout, imem_dout, mem_hold,
+        input scan_clk, scan_en, scan_in,
+        output scan_out
     );
 
     modport CRAS(
@@ -181,7 +183,7 @@ module rv_uart_top(
     //integer      count;
     logic [95:0] key;
     logic clk_rv;
-    assign clk_rv = clk_50M;// & !scan_en;
+    assign clk_rv = clk_50M;
 	assign debug = 0;
 	assign debug_input = 5'b00000;
 
@@ -199,9 +201,6 @@ module rv_uart_top(
 	assign cs = spi_cs;
     
     //Scanchain
-    logic scan_rst_n;
-    assign scan_clk = clk;
-    assign scan_rst_n = scan_en; // Reset scan chain when disabled
 	assign prog = scan_en;
 
 

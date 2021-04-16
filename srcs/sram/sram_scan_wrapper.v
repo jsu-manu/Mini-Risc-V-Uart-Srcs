@@ -1,13 +1,13 @@
 `timescale 1ns / 10ps 
-module sram_scan_wrapper ( clk, rst_n, scan_in, scan_out );
+module sram_scan_wrapper ( scan_clk, scan_rst_n, scan_in, scan_out );
 
-parameter N_addr = 31;  //number of bits in addr
-parameter N_cnt = 32;  // bits reserved for storing count for subsequent addresses + 1 bit specifying read/write
+parameter N_addr = 32;  //number of bits in addr
+parameter N_cnt = 31;  // bits reserved for storing count for subsequent addresses + 1 bit specifying read/write
 
 parameter N_data = 32;   //number of bits in data bus
 parameter N_clk = 16;   //half the number of bits in data bus
 
-input clk, rst_n, scan_in;
+input scan_clk, scan_rst_n, scan_in;
 output scan_out;
 reg scan_out;
 reg write_en, sense_en;
@@ -24,11 +24,11 @@ reg [N_data-1:0] clk_count;
 reg clk_div;
 reg [N_cnt-1:0] addr_counter;
 
-wire clk_1 = rst_n & clk;
-//sync inputs with negedge of clk
-always @(negedge clk) begin
-    rst_n_sync <= rst_n;
-    scan_in_sync <= rst_n & scan_in;
+wire clk_1 = scan_rst_n & scan_clk;
+//sync inputs with negedge of scan_clk
+always @(negedge scan_clk) begin
+    rst_n_sync <= scan_rst_n;
+    scan_in_sync <= scan_rst_n & scan_in;
 end
 
 //counter for addr cnt register scan in
@@ -69,13 +69,13 @@ always @(posedge clk_1 or negedge rst_n_sync) begin
         data_scan_reg[N_data-1 : 0] <= {demux_out_data, data_scan_reg[N_data-1 : 1]};
 end
 
-//clk divide logic
-always @(posedge clk) begin
+//scan_clk divide logic
+always @(posedge scan_clk) begin
     if (!rst_n_sync) clk_count <= 'd0;
     else if (clk_count == N_clk-1) clk_count <= 'd0;
     else clk_count <= clk_count + 1;
 end
-always @(posedge clk) begin
+always @(posedge scan_clk) begin
     if (!rst_n_sync) clk_div <= 'd0;
     if(clk_count == N_clk-1) clk_div <= ~clk_div;
 end
@@ -132,7 +132,6 @@ wire    clk_w = clk_div;
 wire    write_en_w = write_en;
 wire    sense_en_w = sense_en;
 wire [N_addr-1:0]   addr_w = addr[N_addr-1:0];
-
 wire [N_data-1:0]   din_w = data_in_reg[N_data-1:0];
 
 sram_compiled_array imem0 ( .dout7(dout[7]), .dout6(dout[6]),
@@ -180,27 +179,3 @@ sram_compiled_array imem3 ( .dout7(dout[31]), .dout6(dout[30]),
      .addr2(addr_w[2]), .addr1(addr_w[1]), .addr0(addr_w[0]));
 
 endmodule
- 
-
-
-//reg [1:0] CUR_SCAN_STATE;
-//reg [1:0] NXT_SCAN_STATE;
-//
-//localparam LD_ADDR_CNT = 2'b00,
-//           SCAN_DATA_IN = 2'b01,
-//           SCAN_DATA_OUT = 2'b01,
-//           RESET_SCAN = 2'b11;
-//always @(*) begin
-//    NXT_SCAN_STATE = CUR_SCAN_STATE;
-//    case (CUR_SCAN_STATE)
-//        RESET_SCAN : begin
-//            
-//        end
-//        LD_ADDR_CNT : begin
-//        end
-//        SCAN_DATA_IN : begin
-//        end
-//        SCAN_DATA_OUT : begin
-//        end
-//end
-
