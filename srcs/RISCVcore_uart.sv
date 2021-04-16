@@ -373,6 +373,7 @@ module RISCVcore_uart(
     assign mem_addr = bus.mem_addr;
     assign mem_din = bus.mem_din;
     assign bus.mem_dout = mem_dout;
+    assign bus.memcon_prog_ena = rbus.prog;
 
 
 //    assign bus.PC_En=!bus.hz;
