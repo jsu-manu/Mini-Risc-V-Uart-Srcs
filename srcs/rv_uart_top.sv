@@ -159,8 +159,10 @@ module rv_uart_top(
     output logic tx,
     
     //Scanchain
-    input  logic scan_en, // enable scanchain
-    input  logic scan_in, // bit to write to IMEM
+    input  logic scan_en,
+    input  logic scan_in,
+    input  logic scan_clk,
+    output logic scan_out,
     
     //SPI
     input  logic miso,
@@ -180,7 +182,6 @@ module rv_uart_top(
     logic [95:0] key;
     logic clk_rv;
     assign clk_rv = clk_50M;// & !scan_en;
-	assign prog = scan_en;
 	assign debug = 0;
 	assign debug_input = 5'b00000;
 
@@ -198,9 +199,10 @@ module rv_uart_top(
 	assign cs = spi_cs;
     
     //Scanchain
-    logic scan_clk, scan_rst_n;
+    logic scan_rst_n;
     assign scan_clk = clk;
-    assign scan_rst_n = !Rst;
+    assign scan_rst_n = scan_en; // Reset scan chain when disabled
+	assign prog = scan_en;
 
 
 STARTUPE2 startup_i(.CFGCLK(), .CFGMCLK(), .EOS(), .PREQ(), .CLK(0), .GSR(0), .GTS(0), .KEYCLEARB(0), .PACK(0), .USRCCLKO(spi_sck), .USRCCLKTS(0), .USRDONEO(0), .USRDONETS(0));

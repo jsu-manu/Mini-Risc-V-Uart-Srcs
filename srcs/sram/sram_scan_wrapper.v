@@ -1,8 +1,8 @@
 `timescale 1ns / 10ps 
 module sram_scan_wrapper ( clk, rst_n, scan_in, scan_out );
 
-parameter N_addr = 12;  //number of bits in addr
-parameter N_cnt = 13;  // bits reserved for storing count for subsequent addresses + 1 bit specifying read/write
+parameter N_addr = 11;  //number of bits in addr
+parameter N_cnt = 12;  // bits reserved for storing count for subsequent addresses + 1 bit specifying read/write
 
 parameter N_data = 8;   //number of bits in data bus
 parameter N_clk = 4;   //half the number of bits in data bus
@@ -14,7 +14,6 @@ reg write_en, sense_en;
 reg [N_addr + N_cnt-1 : 0] addr_cnt_reg;
 reg [N_data-1 : 0] data_scan_reg, data_in_reg, data_out_reg;
 wire  [N_data-1 : 0]  dout;
-reg [N_data-1 : 0]  din;
 
 reg  [N_addr-1 : 0]  addr;
 integer addr_cnt_pointer;
@@ -136,13 +135,13 @@ wire [N_addr-1:0]   addr_w = addr[N_addr-1:0];
 
 wire [N_data-1:0]   din_w = data_in_reg[N_data-1:0];
 
-sram_compiled_array SRAM_inst ( .dout7(dout[7]), .dout6(dout[6]),
+sram_compiled_array imem0 ( .dout7(dout[7]), .dout6(dout[6]),
      .dout5(dout[5]), .dout4(dout[4]), .dout3(dout[3]),
      .dout2(dout[2]), .dout1(dout[1]), .dout0(dout[0]),
      .sense_en(sense_en_w), .write_en(write_en_w), .clk(clk_w),
      .din7(din_w[7]), .din6(din_w[6]), .din5(din_w[5]), .din4(din_w[4]),
      .din3(din_w[3]), .din2(din_w[2]), .din1(din_w[1]), .din0(din_w[0]),
-     .addr11(addr_w[11]), .addr10(addr_w[10]), .addr9(addr_w[9]),
+     .addr10(addr_w[10]), .addr9(addr_w[9]),
      .addr8(addr_w[8]), .addr7(addr_w[7]), .addr6(addr_w[6]),
      .addr5(addr_w[5]), .addr4(addr_w[4]), .addr3(addr_w[3]),
      .addr2(addr_w[2]), .addr1(addr_w[1]), .addr0(addr_w[0]));

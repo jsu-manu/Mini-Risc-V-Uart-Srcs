@@ -29,7 +29,8 @@ initial begin
         addr = $random;
         din = $random;
         write_en = 'b1;
-        repeat(2) @(posedge clk);
+        //repeat(2) @(posedge clk);
+        @(posedge clk);
         write_en = 'b0;
         @(posedge clk);
         sense_en = 'b0;
