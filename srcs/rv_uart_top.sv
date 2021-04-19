@@ -155,6 +155,15 @@ endinterface
 module rv_uart_top(
     input  logic clk,
     input  logic Rst,
+    output logic clk_out,
+    
+    //FPGA Debugging
+    input  logic debug,
+    input  logic addr_dn, addr_up,
+    input  logic [4:0] debug_input,
+    output logic [7:0] sev_out,
+    output logic [7:0] an,
+    output logic [15:0] led,
     
     //UART
     input  logic rx,
@@ -171,21 +180,31 @@ module rv_uart_top(
     output logic mosi, cs
 );
 
-	logic [4:0] debug_input;
+//	logic [4:0] debug_input;
 	logic prog;
-	logic debug;
+//	logic debug;
     logic [31:0] debug_output;
-    //logic [3:0]  seg_cur, seg_nxt;
+    logic [3:0]  seg_cur, seg_nxt;
     logic        clk_50M, clk_5M;
-    //logic clk_7seg;// clk_disp;
-    logic addr_dn, addr_up;
-    //clock divider variable
-    //integer      count;
+    logic clk_7seg;
+//    logic addr_dn, addr_up;
     logic [95:0] key;
     logic clk_rv;
     assign clk_rv = clk_50M;
-	assign debug = 0;
-	assign debug_input = 5'b00000;
+//	assign debug = 0;
+//	assign debug_input = 5'b00000;
+
+    // Debug Output Driving
+    assign led = {12'h0, rbus.stack_mismatch, mbus.RAS_ena, rbus.trapping, rbus.uart_IRQ};
+    assign debug_output = (prog | debug ) ? rbus.debug_output : mbus.disp_out;
+    enum logic [7:0] {a0=8'b11111110, a1=8'b11111101,
+                      a2=8'b11111011, a3=8'b11110111,
+                      a4=8'b11101111, a5=8'b11011111,
+                      a6=8'b10111111, a7=8'b01111111}
+                      an_cur, an_nxt;
+	clk_div cdiv(clk,Rst,16'd500,clk_7seg);
+    assign an = an_cur;
+    assign clk_out = clk_50M;
 
 
     assign key[95:48]=48'h3cf3cf3cf3cf;
@@ -228,7 +247,7 @@ STARTUPE2 startup_i(.CFGCLK(), .CFGMCLK(), .EOS(), .PREQ(), .CLK(0), .GSR(0), .G
 
     Memory_Controller memcon0(rbus.memcon, mbus.memcon);
 
-    // Debug_Display d0(mbus.display);
+    Debug_Display d0(mbus.display);
 
     uart_controller u0(mbus.uart, rbus.uart);
 
@@ -241,98 +260,93 @@ STARTUPE2 startup_i(.CFGCLK(), .CFGMCLK(), .EOS(), .PREQ(), .CLK(0), .GSR(0), .G
   //clk_wiz_0 clk_div0(clk_50M, clk);
   //clk_wiz_1 clk_div1(clk_5M, clk_50M);
 
-	// clk_div cdiv(clk,Rst,16'd500,clk_7seg);
-  // assign an = an_cur;
-//  assign led = debug_output[15:0];
-  // assign clk_out = clk_50M;
+   always_ff @(posedge clk_7seg) begin
+     if (Rst) begin
+       an_cur <= a0;
+       seg_cur <= debug_output[3:0];
+     end
+     else begin
+       an_cur <= an_nxt;
+       seg_cur <= seg_nxt;
+     end
+   end
 
-  // always_ff @(posedge clk_7seg) begin
-  //   if (Rst) begin
-  //     an_cur <= a0;
-  //     seg_cur <= debug_output[3:0];
-  //   end
-  //   else begin
-  //     an_cur <= an_nxt;
-  //     seg_cur <= seg_nxt;
-  //   end
-  // end
+   always_comb begin
+     case(an_cur)
+       a0: begin
+             an_nxt = a1;
+             seg_nxt = debug_output[7:4];
+           end
+       a1: begin
+             an_nxt = a2;
+             seg_nxt = debug_output[11:8];
+           end
+       a2: begin
+             an_nxt = a3;
+             seg_nxt = debug_output[15:12];
+           end
+       a3: begin
+             an_nxt = a4;
+             seg_nxt = debug_output[19:16];
+           end
+       a4: begin
+             an_nxt = a5;
+             seg_nxt = debug_output[23:20];
+           end
+       a5: begin
+             an_nxt = a6;
+             seg_nxt = debug_output[27:24];
+           end
+       a6: begin
+             an_nxt = a7;
+             seg_nxt = debug_output[31:28];
+           end
+       a7: begin
+             an_nxt = a0;
+             seg_nxt = debug_output[3:0];
+           end
+       default: begin
+             an_nxt = a0;
+             seg_nxt = debug_output[3:0];
+           end
+     endcase
+   end
 
-  // always_comb begin
-  //   case(an_cur)
-  //     a0: begin
-  //           an_nxt = a1;
-  //           seg_nxt = debug_output[7:4];
-  //         end
-  //     a1: begin
-  //           an_nxt = a2;
-  //           seg_nxt = debug_output[11:8];
-  //         end
-  //     a2: begin
-  //           an_nxt = a3;
-  //           seg_nxt = debug_output[15:12];
-  //         end
-  //     a3: begin
-  //           an_nxt = a4;
-  //           seg_nxt = debug_output[19:16];
-  //         end
-  //     a4: begin
-  //           an_nxt = a5;
-  //           seg_nxt = debug_output[23:20];
-  //         end
-  //     a5: begin
-  //           an_nxt = a6;
-  //           seg_nxt = debug_output[27:24];
-  //         end
-  //     a6: begin
-  //           an_nxt = a7;
-  //           seg_nxt = debug_output[31:28];
-  //         end
-  //     a7: begin
-  //           an_nxt = a0;
-  //           seg_nxt = debug_output[3:0];
-  //         end
-  //     default: begin
-  //           an_nxt = a0;
-  //           seg_nxt = debug_output[3:0];
-  //         end
-  //   endcase
-  // end
+   always_comb begin
+     case (seg_cur)
+       4'b0000: sev_out = 7'b0000001;
+       4'b0001: sev_out = 7'b1001111;
+       4'b0010: sev_out = 7'b0010010;
+       4'b0011: sev_out = 7'b0000110;
+       4'b0100: sev_out = 7'b1001100;
+       4'b0101: sev_out = 7'b0100100;
+       4'b0110: sev_out = 7'b0100000;
+       4'b0111: sev_out = 7'b0001111;
+       4'b1000: sev_out = 7'b0000000;
+       4'b1001: sev_out = 7'b0000100;
+       4'b1010: sev_out = 7'b0001000;
+       4'b1011: sev_out = 7'b1100000;
+       4'b1100: sev_out = 7'b0110001;
+       4'b1101: sev_out = 7'b1000010;
+       4'b1110: sev_out = 7'b0110000;
+       4'b1111: sev_out = 7'b0111000;
+       default: sev_out = 7'b0000000;
+     endcase
+   end
 
-  // always_comb begin
-  //   case (seg_cur)
-  //     4'b0000: sev_out = 7'b0000001;
-  //     4'b0001: sev_out = 7'b1001111;
-  //     4'b0010: sev_out = 7'b0010010;
-  //     4'b0011: sev_out = 7'b0000110;
-  //     4'b0100: sev_out = 7'b1001100;
-  //     4'b0101: sev_out = 7'b0100100;
-  //     4'b0110: sev_out = 7'b0100000;
-  //     4'b0111: sev_out = 7'b0001111;
-  //     4'b1000: sev_out = 7'b0000000;
-  //     4'b1001: sev_out = 7'b0000100;
-  //     4'b1010: sev_out = 7'b0001000;
-  //     4'b1011: sev_out = 7'b1100000;
-  //     4'b1100: sev_out = 7'b0110001;
-  //     4'b1101: sev_out = 7'b1000010;
-  //     4'b1110: sev_out = 7'b0110000;
-  //     4'b1111: sev_out = 7'b0111000;
-  //     default: sev_out = 7'b0000000;
-  //   endcase
-  // end
-
-//  integer cnt = 0;
-//    integer maxcnt = 100000000;
-//    always_ff @(posedge clk) begin
-//        if (Rst) begin
-//            cnt = 0;
-//        end else if (~(debug || prog)) begin
-//            if (cnt == maxcnt) begin
-//                cnt <= 0;
-//                addr_dn <= 1;
-//            end else begin
-//                cnt <= cnt + 1;
-//                addr_dn <= 0;
-//            end
-//        end
-//    end
+  integer cnt = 0;
+    integer maxcnt = 100000000;
+    always_ff @(posedge clk) begin
+        if (Rst) begin
+            cnt = 0;
+        end else if (~(debug || prog)) begin
+            if (cnt == maxcnt) begin
+                cnt <= 0;
+                addr_dn <= 1;
+            end else begin
+                cnt <= cnt + 1;
+                addr_dn <= 0;
+            end
+        end
+    end
 endmodule: rv_uart_top
