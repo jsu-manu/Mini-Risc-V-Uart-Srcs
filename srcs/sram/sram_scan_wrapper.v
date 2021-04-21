@@ -1,4 +1,8 @@
-`timescale 1ns / 10ps 
+///SRAM_wrapper for reading writing data serially
+//Manu Rathore
+//Apr 20 2021
+
+`timescale 1ns / 10ps
 module sram_scan_wrapper ( scan_clk, scan_rst_n, scan_in, scan_out );
 
 parameter N_addr = 32;  //number of bits in addr
@@ -72,12 +76,12 @@ end
 //scan_clk divide logic
 always @(posedge scan_clk) begin
     if (!rst_n_sync) clk_count <= 'd0;
-    else if (clk_count == N_clk-1) clk_count <= 'd0;
+    else if (clk_count == N_data-1) clk_count <= 'd0;
     else clk_count <= clk_count + 1;
 end
 always @(posedge scan_clk) begin
     if (!rst_n_sync) clk_div <= 'd0;
-    if(clk_count == N_clk-1) clk_div <= ~clk_div;
+    if((clk_count == N_clk-1)||(clk_count == N_data-1)) clk_div <= ~clk_div;
 end
 
 //Load data_in load register to drive SRAM inputs
@@ -88,33 +92,42 @@ always @(negedge clk_div) begin
         data_in_reg <= data_scan_reg;
 end
 
-
+reg load_addr_d, load_addr_d1;
+wire load_addr = load_addr_d ^ load_addr_d1;
 //addr_counter count value
-always@(posedge scan_select) begin
-    addr_counter <= addr_cnt_reg[N_cnt-1:1];
+always@(posedge clk_1) begin
+    if(!rst_n_sync)
+        load_addr_d <= 'b0;
+    else
+        load_addr_d <= scan_select;
 end
 
+always@(posedge clk_1) begin
+    load_addr_d1 <= load_addr_d;
+end
+
+
+
 //Addr generator from addr_cnt_reg
-always @(negedge clk_div) begin
+always @(posedge clk_1) begin
     if(!rst_n_sync) begin
         addr <= 'd0;
         write_en <= 'b0;
         sense_en <= 'b1;
         addr_counter <= 'd0;
     end else if(scan_select)begin
-        addr[N_addr-1:0] = addr_cnt_reg[N_addr+N_cnt-1:N_cnt] + (addr_cnt_reg[N_cnt-1:0] - addr_counter[N_cnt-1:0]);
-        addr_counter = addr_counter -1;
-        write_en = addr_cnt_reg[0];
-        sense_en = addr_cnt_reg[0];
+        if (clk_count == N_clk-1) begin
+            addr[N_addr-1:0] <= addr_cnt_reg[N_addr+N_cnt-1:N_cnt] + (addr_cnt_reg[N_cnt-1:0] - addr_counter[N_cnt-1:0]);
+            addr_counter <= addr_counter -1;
+            write_en <= addr_cnt_reg[0];
+            sense_en <= addr_cnt_reg[0];
+        end else if (load_addr) begin
+            addr <= addr;
+            write_en <= write_en;
+            sense_en <= sense_en;
+            addr_counter <= addr_cnt_reg[N_cnt-1:1];
+        end
     end
-end
-
-//data out load register
-always @(posedge clk_div) begin
-    if(!rst_n_sync)
-        data_out_reg <= 'd0;
-    else if (scan_select & !sense_en)
-        data_out_reg <= dout;
 end
 
 //Scan out data output register
@@ -122,6 +135,9 @@ always @(posedge clk_1) begin
     if(!rst_n_sync) begin
         scan_out <= 'b0;
         data_out_reg <= 'd0;
+    end else if (clk_count == N_clk -1) begin
+        scan_out <= scan_out;
+        data_out_reg <= dout;
     end else begin
         scan_out <= rst_n_sync & data_out_reg[0];
         data_out_reg[N_data-1:0] <= {data_out_reg[0], data_out_reg[N_data-1:1]};
@@ -144,7 +160,7 @@ sram_compiled_array imem0 ( .dout7(dout[7]), .dout6(dout[6]),
      .addr8(addr_w[8]), .addr7(addr_w[7]), .addr6(addr_w[6]),
      .addr5(addr_w[5]), .addr4(addr_w[4]), .addr3(addr_w[3]),
      .addr2(addr_w[2]), .addr1(addr_w[1]), .addr0(addr_w[0]));
-     
+
 sram_compiled_array imem1 ( .dout7(dout[15]), .dout6(dout[14]),
      .dout5(dout[13]), .dout4(dout[12]), .dout3(dout[11]),
      .dout2(dout[10]), .dout1(dout[9]), .dout0(dout[8]),
