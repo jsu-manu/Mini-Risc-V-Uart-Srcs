@@ -29,10 +29,10 @@ reg clk_div;
 reg [N_cnt-1:0] addr_counter;
 
 wire clk_1 = scan_rst_n & scan_clk;
-//sync inputs with negedge of scan_clk
-always @(negedge scan_clk) begin
-    rst_n_sync <= scan_rst_n;
-    scan_in_sync <= scan_rst_n & scan_in;
+//sync inputs with negedge of clk
+always @(negedge clk) begin
+    rst_n_sync <= rst_n;
+    scan_in_sync <= rst_n & scan_in;
 end
 
 //counter for addr cnt register scan in
@@ -73,13 +73,13 @@ always @(posedge clk_1 or negedge rst_n_sync) begin
         data_scan_reg[N_data-1 : 0] <= {demux_out_data, data_scan_reg[N_data-1 : 1]};
 end
 
-//scan_clk divide logic
-always @(posedge scan_clk) begin
+//clk divide logic
+always @(posedge clk) begin
     if (!rst_n_sync) clk_count <= 'd0;
     else if (clk_count == N_data-1) clk_count <= 'd0;
-    else clk_count <= clk_count + 1;
+    else if (scan_select) clk_count <= clk_count + 1;
 end
-always @(posedge scan_clk) begin
+always @(posedge clk) begin
     if (!rst_n_sync) clk_div <= 'd0;
     if((clk_count == N_clk-1)||(clk_count == N_data-1)) clk_div <= ~clk_div;
 end
@@ -116,7 +116,7 @@ always @(posedge clk_1) begin
         sense_en <= 'b1;
         addr_counter <= 'd0;
     end else if(scan_select)begin
-        if (clk_count == N_clk-1) begin
+        if (clk_count == N_data-1) begin
             addr[N_addr-1:0] <= addr_cnt_reg[N_addr+N_cnt-1:N_cnt] + (addr_cnt_reg[N_cnt-1:0] - addr_counter[N_cnt-1:0]);
             addr_counter <= addr_counter -1;
             write_en <= addr_cnt_reg[0];
@@ -130,19 +130,21 @@ always @(posedge clk_1) begin
     end
 end
 
+
 //Scan out data output register
 always @(posedge clk_1) begin
     if(!rst_n_sync) begin
         scan_out <= 'b0;
         data_out_reg <= 'd0;
     end else if (clk_count == N_clk -1) begin
-        scan_out <= scan_out;
+        scan_out <= rst_n_sync & data_out_reg[0];
         data_out_reg <= dout;
     end else begin
         scan_out <= rst_n_sync & data_out_reg[0];
         data_out_reg[N_data-1:0] <= {data_out_reg[0], data_out_reg[N_data-1:1]};
     end
 end
+
 
 wire    clk_w = clk_div;
 wire    write_en_w = write_en;
